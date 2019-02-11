@@ -11,6 +11,7 @@ class Director {
         this.projects = [];
         this.employees = [];
     }
+
     getNewProjects(projects) {
         if (this.numberOfProjectsToday != undefined)
             this.numberOfProjectsTomorrow = this.numberOfProjectsToday;
@@ -24,24 +25,55 @@ class Director {
         this.numberOfProjects = this.numberOfProjects + num;
         //return this.numberOfProjects;
     }
-    getEmployee() {
 
+    getEmployees() {
+        
     }
+
     sentProjectToDepartment(webDept, mobDept) {
+        wNum = 0;
+        mNum = 0;
+        wNumIndex = [];
+        mNumIndex = [];
         for (i = 1; i <= this.numberOfProjects; i++) {
             if (this.projects[i].readyForDev == true) {
                 if (this.projects[i].type == 'Web project') {
-                    webDept.recieveProject(this.projects[i]);
-                    this.projects[i].readyForDev = false;
-                    this.projects[i].inDevelopment = true;
+                    //webDept.recieveProject(this.projects[i]);
+                    wNum++;
+                    wNumIndex[wNum] = i;
+
                 }
                 else {
-                    mobDept.recieveProject(this.projects[i]);
-                    this.projects[i].readyForDev = false;
-                    this.projects[i].inDevelopment = true;
+                    //mobDept.recieveProject(this.projects[i]);
+                    mNum++;
+                    mNumIndex[mNum] = i;
+
                 }
+                // this.projects[i].readyForDev = false;
+                // this.projects[i].inDevelopment = true;
             }
         }
+        w = webDept.numberOfEmployees - webDept.numberOfBusyEmployees;  //свободные работники веб отдела
+        m = mobDept.numberOfEmployees - mobDept.numberOfBusyEmployees;  //свободные работники мобильного отдела
+        if ((wNum > 0) && (c > 0)) {
+            if (wNum <= w)       //если проектов меньше/равно, чем разрабов
+                w = wNum;
+            for (i = 1; i <= w; i++) {
+                webDept.recieveProject(this.projects[wNumIndex[i]]);
+                this.projects[wNumIndex[i]].readyForDev = false;
+                this.projects[wNumIndex[i]].inDevelopment = true;
+            }
+        }
+        if ((mNum > 0) && (m > 0)) {
+            if (mNum <= m)
+                m = mNum;
+            for (i = 1; i <= m; i++) {
+                mobDept.recieveProject(this.projects[mNumIndex[i]]);
+                this.projects[mNumIndex[i]].readyForDev = false;
+                this.projects[mNumIndex[i]].inDevelopment = true;
+            }
+        }
+
     }
 }
 
@@ -52,6 +84,7 @@ class Department {
     constructor(type) {
         this.type = Department.typeOfDepartment(type);
         this.numberOfEmployees = 0;
+        this.numberOfBusyEmployees = 0;
         this.projects = [];
         this.numberOfProjects = 0;
 
@@ -60,7 +93,13 @@ class Department {
 
     recieveProject(proj) {
         this.projects[this.numberOfProjects] = proj;
+        this.projects[this.numberOfProjects].readyForDev=false;
+        this.projects[this.numberOfProjects].inDevelopment=true;
         this.numberOfProjects++;
+
+    }
+
+    recieveEmployees() {
 
     }
 }
