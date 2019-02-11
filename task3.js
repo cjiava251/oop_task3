@@ -4,6 +4,8 @@ class Company {
     }
 }
 
+//добавить счет дней
+
 class Director {
     constructor() {
         this.numberOfProjects = 0;
@@ -23,11 +25,10 @@ class Director {
             }
         }
         this.numberOfProjects = this.numberOfProjects + num;
-        //return this.numberOfProjects;
     }
 
     getEmployees() {
-        
+
     }
 
     sentProjectToDepartment(webDept, mobDept) {
@@ -38,19 +39,15 @@ class Director {
         for (i = 1; i <= this.numberOfProjects; i++) {
             if (this.projects[i].readyForDev == true) {
                 if (this.projects[i].type == 'Web project') {
-                    //webDept.recieveProject(this.projects[i]);
                     wNum++;
                     wNumIndex[wNum] = i;
 
                 }
                 else {
-                    //mobDept.recieveProject(this.projects[i]);
                     mNum++;
                     mNumIndex[mNum] = i;
 
                 }
-                // this.projects[i].readyForDev = false;
-                // this.projects[i].inDevelopment = true;
             }
         }
         w = webDept.numberOfEmployees - webDept.numberOfBusyEmployees;  //свободные работники веб отдела
@@ -87,8 +84,6 @@ class Department {
         this.numberOfBusyEmployees = 0;
         this.projects = [];
         this.numberOfProjects = 0;
-
-        //this.typeOfDepartment=type;
     }
 
     recieveProject(proj) {
@@ -110,22 +105,10 @@ class Employee {
     }
     constructor() {
         this.type = Employee.typeOfEmployee(type);
-        //this.speedOfDevelopment = 1;
         this.completedProjects = 0;
-        //this.projectInDevelopment
         this.busy = false;
         this.daysToCompleteProject = 0;
     }
-    /*
-        completeProject(proj) {
-            if (proj.type=='Web project') {
-    
-            }
-            else
-            if (proj.type=='Mobile project') {
-    
-            }
-        } */
 }
 
 class Project {
@@ -141,6 +124,7 @@ class Project {
     }
 
     completeProject(emp) {
+        //добавить день начала выполнения
         if (this.type == Project.typeOfProject(0)) {
 
         } else
@@ -150,19 +134,13 @@ class Project {
                 }
                 else {
                     emp = [];
-
-                    //emp[this.difficulty]=new Employee;
                 }
             }
     }
 }
 
+/*
 var webDept = new Department(Department.typeOfDepartment[0]);
 var mobileDept = new Department(Department.typeOfDepartment[1]);
 var testDept = new Department(Department.typeOfDepartment[2]);
-
-
-
-
-//var dep=new Department(1);
-//console.log(dep.type);
+*/
