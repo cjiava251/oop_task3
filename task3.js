@@ -1,9 +1,11 @@
+
 class Company {
     constructor() {
-        this.day=1;
+        this.day = 1;
 
     }
 }
+
 
 //добавить счет дней
 
@@ -15,12 +17,12 @@ class Director {
         this.numberOfQATesters = 0;
         this.numberOfEmplyees = 0;
         this.webProjects = [];
-        this.mobileProjects=[];
-        this.numberOfWebProjects=[];
-        this.numberOfMobileProjects=[];
-        this.webDevelopers=[];
-        this.mobileDevelopers=[];
-        this.qaTesters=[];
+        this.mobileProjects = [];
+        this.numberOfWebProjects = [];
+        this.numberOfMobileProjects = [];
+        this.webDevelopers = [];
+        this.mobileDevelopers = [];
+        this.qaTesters = [];
     }
 
     getNewProjects(day) {
@@ -30,33 +32,33 @@ class Director {
         if (num != 0) {
             for (i = 1; i <= num; i++) {
                 //this.projects[++this.numberOfProjects] = new Project;
-                projects=new Project;
-               /* if (projects.type==Project.typeOfProject(0))
-                    this.webProjects[++this.numberOfWebProjects[day]][day]=projects;
-                else 
-                    this.mobileProjects[++this.numberOfMobileProjects[day]][day]=projects;
-                    */
+                projects = new Project;
+                /* if (projects.type==Project.typeOfProject(0))
+                     this.webProjects[++this.numberOfWebProjects[day]][day]=projects;
+                 else 
+                     this.mobileProjects[++this.numberOfMobileProjects[day]][day]=projects;
+                     */
             }
         }
     }
 
     getEmployees(day) {
-        numQ=0;     //количество готовых к тестированию проектов 
+        numQ = 0;     //количество готовых к тестированию проектов 
 
-        for (var i=0;i<=this.numberOfMobileProjects;i++) {
-            if (this.mobileProjects[i].readyToTest==true)
+        for (var i = 0; i <= this.numberOfMobileProjects; i++) {
+            if (this.mobileProjects[i].readyToTest == true)
                 numQ++;
         }
-        for (i=0;i<=this.numberOfWebProjects;i++)
-            if (this.webProjects[i].readyToTest==true)
+        for (i = 0; i <= this.numberOfWebProjects; i++)
+            if (this.webProjects[i].readyToTest == true)
                 numQ++;
-        if (this.numberOfWebDevelopers<this.numberOfWebProjects) 
-            for (i=1;i<=this.numberOfWebProjects-this.numberOfWebDevelopers;i++) 
-                this.webDevelopers[this.numberOfWebDevelopers++]=new Employee(Employee.typeOfEmployee(0));
-            
-        if (this.numberOfMobileDevelopers<this.numberOfMobileProjects) 
-            for (i=1;i<=this.numberOfMobileProjects-this.numberOfMobileDevelopers;i++)
-                this.mobileDevelopers[this.numberOfMobileDevelopers++]=new Employee(Employee.typeOfEmployee(1));
+        if (this.numberOfWebDevelopers < this.numberOfWebProjects)
+            for (i = 1; i <= this.numberOfWebProjects - this.numberOfWebDevelopers; i++)
+                this.webDevelopers[this.numberOfWebDevelopers++] = new Employee(Employee.typeOfEmployee(0));
+
+        if (this.numberOfMobileDevelopers < this.numberOfMobileProjects)
+            for (i = 1; i <= this.numberOfMobileProjects - this.numberOfMobileDevelopers; i++)
+                this.mobileDevelopers[this.numberOfMobileDevelopers++] = new Employee(Employee.typeOfEmployee(1));
         /*
         if (this.numberOfQATesters<)
             for (i=1;i<=numQ-this.numberOfQATesters;i++) 
@@ -70,7 +72,7 @@ class Director {
     }
 
     sentProjectToDepartment(webDept, mobDept) {
-        wNum = 0;       
+        wNum = 0;
         mNum = 0;
         wNumIndex = [];
         mNumIndex = [];
@@ -97,7 +99,7 @@ class Director {
                 this.projects[wNumIndex[i]].readyForDev = false;
                 this.projects[wNumIndex[i]].inDevelopment = true;
                 webDept.recieveProject(this.projects[wNumIndex[i]]);
-                
+
             }
         }
         if ((mNum > 0) && (m > 0)) {
@@ -107,7 +109,7 @@ class Director {
                 this.projects[mNumIndex[i]].readyForDev = false;
                 this.projects[mNumIndex[i]].inDevelopment = true;
                 mobDept.recieveProject(this.projects[mNumIndex[i]]);
-                
+
             }
         }
 
@@ -127,7 +129,7 @@ class Department {
         this.numberOfEmployees = 0;
         this.numberOfBusyEmployees = 0;
         this.projects = [];
-        this.employees=[];
+        this.employees = [];
         this.numberOfProjects = 0;
     }
 
@@ -136,7 +138,7 @@ class Department {
     }
 
     recieveEmployees(employees) {
-        this.employees[this.numberOfEmployees++]=employees;
+        this.employees[this.numberOfEmployees++] = employees;
     }
 
     completeProject() {
@@ -170,25 +172,25 @@ class Project {
         this.readyForDev = true;
         this.inDevelopment = false;
         this.readyToTest = false;
-        this.dayOfCreate=day;
+        this.dayOfCreate = day;
     }
 
 
 
-    completeProject(emp,day) {
-        if (this.readyForDev==true) {
-            this.dayOfStartDevelopment=day;
-            this.readyForDev=false;
-            this.inDevelopment=true;
-            emp.busy=true;
+    completeProject(emp, day) {
+        if (this.readyForDev == true) {
+            this.dayOfStartDevelopment = day;
+            this.readyForDev = false;
+            this.inDevelopment = true;
+            emp.busy = true;
         }
-        else if (this.inDevelopment==true) {
-            if (day-this.dayOfStartDevelopment==this.difficulty) {
-                this.inDevelopment=false;
-                this.readyToTest=true;
-                emp.busy=false;
+        else if (this.inDevelopment == true) {
+            if (day - this.dayOfStartDevelopment == this.difficulty) {
+                this.inDevelopment = false;
+                this.readyToTest = true;
+                emp.busy = false;
             }
-        } 
+        }
         else {
 
         }
