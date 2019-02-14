@@ -33,11 +33,6 @@ class Director {
             for (i = 1; i <= num; i++) {
                 //this.projects[++this.numberOfProjects] = new Project;
                 projects = new Project;
-                /* if (projects.type==Project.typeOfProject(0))
-                     this.webProjects[++this.numberOfWebProjects[day]][day]=projects;
-                 else 
-                     this.mobileProjects[++this.numberOfMobileProjects[day]][day]=projects;
-                     */
             }
         }
     }
