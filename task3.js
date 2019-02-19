@@ -1,199 +1,324 @@
-
 class Company {
     constructor() {
-        this.day = 1;
+        this.director = new Director;
+        this.webDepartment = new Department(0);
+        this.mobileDepartment = new Department(1);
+        this.testDepartment = new Department(2);
+        this.quantityOfRealizedProjects=0;  //количество реализованных проектов
+        this.quantityOfHiredEmployees=0;  //количество нанятых разработчиков
+        this.quantityOfFiredEmployees=0;  //количество уволенных разработчиков
+        
+    }
 
+    startWorking(day) {
+        for (var i = 1; i <= day; i++) {
+            this.quantityOfHiredEmployees+=this.director.getEmployees(i, this.webDepartment);
+            this.quantityOfHiredEmployees+=this.director.getEmployees(i, this.mobileDepartment);
+            this.quantityOfHiredEmployees+=this.director.getEmployees(i, this.testDepartment);
+            this.director.getProjects(i);
+            this.director.sentProjects(this.webDepartment);
+            this.director.sentProjects(this.mobileDepartment);
+            this.webDepartment.giveProjectsToEmployees();
+            this.mobileDepartment.giveProjectsToEmployees();
+            this.testDepartment.giveProjectsToEmployees();
+            this.webDepartment.completeProjects(i,this.testDepartment);
+            this.mobileDepartment.completeProjects(i,this.testDepartment);
+            this.testDepartment.completeProjects(i,this.testDepartment);
+            this.quantityOfFiredEmployees+=this.webDepartment.fireOut();
+            this.quantityOfFiredEmployees+=this.mobileDepartment.fireOut();
+            this.quantityOfFiredEmployees+=this.testDepartment.fireOut();
+            this.quantityOfRealizedProjects+=this.testDepartment.realizedProjects;
+            console.log(this.quantityOfHiredEmployees);
+        }
     }
 }
 
 
-//добавить счет дней
-
 class Director {
     constructor() {
-        this.numberOfProjects = [];
-        this.numberOfWebDevelopers = 0;
-        this.numberOfMobileDevelopers = 0;
-        this.numberOfQATesters = 0;
-        this.numberOfEmplyees = 0;
-        this.webProjects = [];
-        this.mobileProjects = [];
-        this.numberOfWebProjects = [];
-        this.numberOfMobileProjects = [];
-        this.webDevelopers = [];
-        this.mobileDevelopers = [];
-        this.qaTesters = [];
+        this.projects = [];
+        this.quantityOfAllProjects = 0;
     }
 
-    getNewProjects(day) {
-        //if (this.numberOfProjects[day-1] != undefined)
-        this.numberOfProjects[day] = Math.round(Math.random() * 4);
-        num = this.numberOfProjects[day];
-        if (num != 0) {
-            for (i = 1; i <= num; i++) {
-                //this.projects[++this.numberOfProjects] = new Project;
-                projects = new Project;
-            }
-        }
+    getProjects(day) {
+        var num = Math.round(Math.random() * 4);
+        if (num > 0)
+            for (var i = 0; i <= num - 1; i++)
+                this.projects[this.projects.length] = new Project(day, ++this.quantityOfAllProjects);
     }
 
-    getEmployees(day) {
-        numQ = 0;     //количество готовых к тестированию проектов 
-
-        for (var i = 0; i <= this.numberOfMobileProjects; i++) {
-            if (this.mobileProjects[i].readyToTest == true)
-                numQ++;
-        }
-        for (i = 0; i <= this.numberOfWebProjects; i++)
-            if (this.webProjects[i].readyToTest == true)
-                numQ++;
-        if (this.numberOfWebDevelopers < this.numberOfWebProjects)
-            for (i = 1; i <= this.numberOfWebProjects - this.numberOfWebDevelopers; i++)
-                this.webDevelopers[this.numberOfWebDevelopers++] = new Employee(Employee.typeOfEmployee(0));
-
-        if (this.numberOfMobileDevelopers < this.numberOfMobileProjects)
-            for (i = 1; i <= this.numberOfMobileProjects - this.numberOfMobileDevelopers; i++)
-                this.mobileDevelopers[this.numberOfMobileDevelopers++] = new Employee(Employee.typeOfEmployee(1));
-        /*
-        if (this.numberOfQATesters<)
-            for (i=1;i<=numQ-this.numberOfQATesters;i++) 
-                this.qaTesters[this.numberOfQATesters++]=new Employee(Employee.typeOfEmployee(2));
-                */
-
-    }
-
-    getNumberOfEmployees() {
-        return this.numberOfEmplyees = this.numberOfWebDevelopers + this.numberOfMobileDevelopers + this.numberOfQATesters;
-    }
-
-    sentProjectToDepartment(webDept, mobDept) {
-        wNum = 0;
-        mNum = 0;
-        wNumIndex = [];
-        mNumIndex = [];
-        for (i = 1; i <= this.numberOfProjects; i++) {
-            if (this.projects[i].readyForDev == true) {
-                if (this.projects[i].type == Project.typeOfProject(0)) {
-                    wNum++;
-                    wNumIndex[wNum] = i;
-
+    getEmployees(day, dept) {
+        var emp, freeEmp, freeProj,s=0;
+        if (day != 1) {
+            if (this.projects.length > 0)
+                for (var i = 0; i <= this.projects.length - 1; i++)
+                    if (dept.type != 'Test') {
+                        emp = new Employee(this.projects[i].type);
+                        s++;
+                        dept.getEmployees(emp);
+                    }
+            freeEmp = dept.getFreeEmployees().length;
+            freeProj = dept.getFreeProjects().length;
+            if ((dept.projects.length > 0) && (freeEmp < freeProj) && (dept.type == 'Test'))
+                for (i = 0; i <= freeProj - freeEmp - 1; i++) {
+                    emp = new Employee('Test');
+                    s++;
+                    dept.getEmployees(emp);
                 }
-                else {
-                    mNum++;
-                    mNumIndex[mNum] = i;
+        }
+        return s;
+    }
 
+    sentProjects(dept) {
+        var k;
+        if (dept.employees.length > 0) {
+
+            var pr = this.projects.filter(function (item) {
+                return item.type == dept.type;
+            });
+            if (pr.length <= dept.employees.length)
+                k = pr.length;
+            else
+                k = dept.employees.length;
+
+            for (var i = 0; i <= this.projects.length - 1; i++) {
+                if ((this.projects[i].type == dept.type) && (k > 0)) {
+                    this.projects[i].stage = 1;
+                    dept.getProject(this.projects[i]);
+                    k--;
                 }
             }
         }
-        w = webDept.numberOfEmployees - webDept.numberOfBusyEmployees;  //свободные работники веб отдела
-        m = mobDept.numberOfEmployees - mobDept.numberOfBusyEmployees;  //свободные работники мобильного отдела
-        if ((wNum > 0) && (c > 0)) {
-            if (wNum <= w)       //если проектов меньше/равно, чем разрабов
-                w = wNum;
-            for (i = 1; i <= w; i++) {
-                this.projects[wNumIndex[i]].readyForDev = false;
-                this.projects[wNumIndex[i]].inDevelopment = true;
-                webDept.recieveProject(this.projects[wNumIndex[i]]);
-
-            }
-        }
-        if ((mNum > 0) && (m > 0)) {
-            if (mNum <= m)
-                m = mNum;
-            for (i = 1; i <= m; i++) {
-                this.projects[mNumIndex[i]].readyForDev = false;
-                this.projects[mNumIndex[i]].inDevelopment = true;
-                mobDept.recieveProject(this.projects[mNumIndex[i]]);
-
-            }
-        }
-
+        this.projects = this.projects.filter(function (item) {
+            return item.stage == 0;
+        });
     }
 
-    sentEmployeeToDepartment() {
 
-    }
 }
 
 class Department {
     static typeOfDepartment(i) {
-        return ['Department of Web Development', 'Department of Mobile Development', 'Department of QA Testing'][i];
+        return ['Web', 'Mobile', 'Test'][i];
     }
     constructor(type) {
-        this.type = Department.typeOfDepartment(type);
-        this.numberOfEmployees = 0;
-        this.numberOfBusyEmployees = 0;
         this.projects = [];
         this.employees = [];
-        this.numberOfProjects = 0;
+        this.type = Department.typeOfDepartment(type);
+        this.realizedProjects=0;
+    }
+    getProject(pr) {
+        this.projects[this.projects.length] = pr;
     }
 
-    recieveProject(proj) {
-        this.projects[this.numberOfProjects++] = proj;
+    getEmployees(emp) {
+        this.employees[this.employees.length] = emp;
     }
 
-    recieveEmployees(employees) {
-        this.employees[this.numberOfEmployees++] = employees;
+    getFreeEmployees() {
+        return this.employees.filter(function (item) {
+            return item.busy == false;
+        });
     }
 
-    completeProject() {
-        /*
-        if (this.numberOfEmployees-this.numberOfBusyEmployees<) {
+    getFreeProjects() {
+        return this.projects.filter(function (item) {
+            return item.inProcess == false;
+        });
+    }
 
+    fireOut() { //увольнение
+        var arr = [], min = 100, minID, s=0;
+        for (var i = 0; i <= this.employees.length - 1; i++)
+            if (this.employees[i].getEmployment() >= 3)
+                arr[arr.length] = i;
+        if (arr.length != 0)
+            if (arr.length == 1) {
+                this.employees[arr[0]] = null;
+                s++;
+            }
+            else {
+                for (i = 0; i <= arr.length - 1; i++) {
+                    if (this.employees[arr[i]].completedProjects < min) {
+                        min = this.employees[arr[i]].completedProjects;
+                        minID = arr[i];
+                    }
+                }
+                this.employees[minID] = null;
+                s++;
+            }
+        this.employees = this.employees.filter(function (item) {
+            return item != null;
+        });
+        return s;
+    }
+
+    giveProjectsToEmployees() {  //передача проектов в руки разработчиков
+        var freeEmp, freeProj, s;
+        switch (this.type) {
+            case 'Web': {
+                for (var i = 0; i <= this.projects.length - 1; i++)
+                    if (this.projects[i].inProcess == false)
+                        for (var j = 0; j <= this.employees.length - 1; j++)
+                            if (this.employees[j].busy == false) {
+                                this.employees[j].busy = true;
+                                this.projects[i].inProcess = true;
+                                this.projects[i].quantityOfDevelopers = 1;
+                                this.employees[j].getProject(this.projects[i]);
+                                break;
+                            }
+                this.projects = this.projects.filter(function (item) {
+                    return item.inProcess == false;
+                });
+                this.employees = this.employees.filter(function (item) {
+                    return item.busy == false;
+                });
+            }
+            case 'Mobile': {
+                freeEmp = this.getFreeEmployees().length;
+                freeProj = this.getFreeProjects().length;
+                for (i = 0; i <= this.projects.length - 1; i++)
+                    if (this.projects[i].inProcess == false)
+                        for (j = 0; j <= this.employees.length - 1; j++)
+                            if (this.employees[j].busy == false) {
+                                this.employees[j].busy = true;
+                                this.projects[i].inProcess = true;
+                                this.projects[i].quantityOfDevelopers = 1;
+                                this.employees[j].getProject(this.projects[i]);
+                                break;
+                            }
+                if (freeEmp > freeProj) {
+                    for (i = 0; i <= this.projects.length - 1; i++) {
+                        freeEmp = this.getFreeEmployees().length;
+                        s = this.projects[i].difficulty - this.projects[i].quantityOfDevelopers;
+                        if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (freeEmp >= s))
+                            for (j = 0; j <= this.employees.length - 1; j++)
+                                if ((this.employees[j].busy == false) && (s != 0)) {
+                                    this.employees[j].busy = true;
+                                    this.projects[i].quantityOfDevelopers++;
+                                    this.employees[j].getProject(this.projects[i]);
+                                    s--;
+                                }
+                    }
+
+                    for (i = 0; i <= this.projects.length - 1; i++)
+                        for (j = 0; j <= this.employees.length - 1; j++)
+                            if ((this.employees[j].project!=undefined) && (this.projects[i].ID == this.employees[j].project.getID()))
+                                this.employees[j].project.quantityOfDevelopers = this.projects[i].quantityOfDevelopers;
+
+                }
+            }
+            case 'Test': {
+                for (i = 0; i <= this.projects.length - 1; i++)
+                    for (j = 0; j <= this.employees.length - 1; j++)
+                        if (this.employees[j].busy == false) {
+                            this.employees[j].busy = true;
+                            this.projects[i].quantityOfDevelopers = 1;
+                            this.employees[j].getProject(this.projects[i]);
+                            break;
+                        }
+            }
         }
-        */
+    }
+
+    completeProjects(day,testDept) {
+        for (var i = 0; i <= this.employees.length-1;i++) 
+            this.realizedProjects+=this.employees[i].completeProject(day,testDept);       
     }
 }
 
 class Employee {
     static typeOfEmployee(i) {
-        return ['Web developer', 'Mobile developer', 'QA tester'][i];
+        return ['Web', 'Mobile', 'Test'][i];
     }
     constructor(type) {
         this.type = Employee.typeOfEmployee(type);
         this.completedProjects = 0;
+        this.project;
         this.busy = false;
-        //this.dayOfStartCompleteProject = 0;   добавить в начале работы над проектом
+        this.notWorkingDays = 0;
+    }
+
+    getEmployment() {
+        if (this.busy == false)
+            this.notWorkingDays++;
+        else
+            this.notWorkingDays = 0;
+        return this.notWorkingDays;
+    }
+
+    getProject(proj) {
+        this.project = proj;
+    }
+
+    completeProject(day, testDept) {
+        var s=0;
+        if ((this.project != null) && (this.project != undefined))
+            switch (this.type) {
+                case 'Web': {
+                    if (this.project.dayOfStartDev == 0)
+                        this.project.dayOfStartDev = day;
+                    else if (day - this.project.dayOfStartDev == this.project.difficulty) {
+                        this.project.stage = 2;
+                        this.project.dayOfStartDev = day;
+                        this.project.inProcess = false;
+                        testDept.getProject(this.project);
+                        this.project = null;
+                        this.busy = false;
+                        this.completedProjects++;
+                        this.notWorkingDays = 0;
+                    }
+
+                }
+                case 'Mobile': {
+                    if (this.project.dayOfStartDev == 0)
+                        this.project.dayOfStartDev = day;
+                    else if (((this.project.quantityOfDevelopers == this.project.difficulty) && (day - this.project.dayOfStartDev == 1)) || (day - this.project.dayOfStartDev == this.project.difficulty)) {
+                        this.project.stage = 2;
+                        this.dayOfStartDev = day;
+                        this.project.inProcess = false;
+                        testDept.getProject(this.project);
+                        this.project = null;
+                        this.busy = false;
+                        this.completedProjects++;
+                        this.notWorkingDays = 0;
+                    }
+                }
+                case 'Test': {
+                    if (day - this.project.dayOfStartDev == 1) {
+                        this.project = null;
+                        this.busy = false;
+                        this.completedProjects++;
+                        s=1;
+                        this.notWorkingDays = 0;
+                    }
+                }
+            }
+        return s;
+
     }
 }
 
 class Project {
     static typeOfProject(i) {
-        return ['Web project', 'Mobile project'][i];
+        return ['Web', 'Mobile'][i];
     }
-    constructor(day) {
+    constructor(day, id) {
         this.type = Project.typeOfProject(Math.round(Math.random()));
         this.difficulty = Math.round(Math.random() * 2 + 1);
-        this.readyForDev = true;
-        this.inDevelopment = false;
-        this.readyToTest = false;
-        this.dayOfCreate = day;
+        this.ID = id;
+        this.quantityOfDevelopers = 0;
+        this.dayOfAdding = day;
+        this.dayOfStartDev = 0;
+        this.stage = 0;  //0 - проект у директора, 1 - проект разрабатывается(веб или мобильный отдел), 2 - проект в отделе тестирования
+        this.inProcess = false;
     }
 
-
-
-    completeProject(emp, day) {
-        if (this.readyForDev == true) {
-            this.dayOfStartDevelopment = day;
-            this.readyForDev = false;
-            this.inDevelopment = true;
-            emp.busy = true;
-        }
-        else if (this.inDevelopment == true) {
-            if (day - this.dayOfStartDevelopment == this.difficulty) {
-                this.inDevelopment = false;
-                this.readyToTest = true;
-                emp.busy = false;
-            }
-        }
-        else {
-
-        }
+    getID() {
+        return this.ID;
     }
+
 }
 
-/*
-var webDept = new Department(Department.typeOfDepartment[0]);
-var mobileDept = new Department(Department.typeOfDepartment[1]);
-var testDept = new Department(Department.typeOfDepartment[2]);
-*/
+var apple=new Company;
+apple.startWorking(10);
