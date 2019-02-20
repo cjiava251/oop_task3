@@ -285,7 +285,7 @@ class Employee {
                     else
                         if (((this.project.quantityOfDevelopers == this.project.difficulty) && (day - this.project.dayOfStartDev == 1)) || ((day - this.project.dayOfStartDev == this.project.difficulty) && (this.project.quantityOfDevelopers == 1))) {
                             this.project.stage = 2;
-                            this.dayOfStartDev = 0;
+                            this.project.dayOfStartDev = 0;
                             this.project.inProcess = false;
                             testDept.getProject(this.project);
                             this.project = null;
