@@ -31,8 +31,9 @@ class Company {
             this.quantityOfFiredEmployees += this.testDepartment.fireOut();
             this.quantityOfRealizedProjects = this.testDepartment.realizedProjects;
 
-            console.log(s + '   ' + this.quantityOfHiredEmployees + '   ' + s1[0] + '   ' + s1[1] + '   ' + s1[2] + '   ' + this.quantityOfRealizedProjects+'   '+this.director.quantityOfAllProjects+'   '+this.quantityOfFiredEmployees);
+            //console.log(this.quantityOfRealizedProjects+'   '+ this.quantityOfHiredEmployees + '   ' + s1[0] + '   ' + s1[1] + '   ' + s1[2] + '   ' + '   '+this.director.quantityOfAllProjects+'   '+this.quantityOfFiredEmployees);
         }
+        console.log(this.quantityOfRealizedProjects + '   ' + this.quantityOfHiredEmployees + '   ' + this.quantityOfFiredEmployees);
     }
 }
 
@@ -165,7 +166,7 @@ class Department {
                             this.employees[j].busy = true;
                             this.projects[i].inProcess = true;
                             this.projects[i].quantityOfDevelopers = 1;
-                            this.projects[i].dayOfStartDev=0;
+                            this.projects[i].dayOfStartDev = 0;
                             this.employees[j].getProject(this.projects[i]);
                             break;
                         }
@@ -182,7 +183,7 @@ class Department {
                             this.employees[j].busy = true;
                             this.projects[i].inProcess = true;
                             this.projects[i].quantityOfDevelopers = 1;
-                            this.projects[i].dayOfStartDev=0;
+                            this.projects[i].dayOfStartDev = 0;
                             this.employees[j].getProject(this.projects[i]);
                             break;
                         }
@@ -195,7 +196,7 @@ class Department {
                                 if ((this.employees[j].busy == false) && (s != 0)) {
                                     this.employees[j].busy = true;
                                     this.projects[i].quantityOfDevelopers++;
-                                    this.projects[i].dayOfStartDev=0;
+                                    this.projects[i].dayOfStartDev = 0;
                                     this.employees[j].getProject(this.projects[i]);
                                     s--;
                                 }
@@ -216,7 +217,7 @@ class Department {
                             this.employees[j].busy = true;
                             this.projects[i].quantityOfDevelopers = 1;
                             this.projects[i].inProcess = true;
-                            this.dayOfStartDev=0;
+                            this.dayOfStartDev = 0;
                             this.employees[j].getProject(this.projects[i]);
                             break;
                         }
@@ -262,50 +263,50 @@ class Employee {
         switch (this.type) {
             case 'Web': {
                 if ((this.project != undefined) && (this.project != null))
-                    if (this.project.dayOfStartDev==0)
-                        this.project.dayOfStartDev=day;
+                    if (this.project.dayOfStartDev == 0)
+                        this.project.dayOfStartDev = day;
                     else
-                    if (day - this.project.dayOfStartDev == this.project.difficulty) {
-                        this.project.stage = 2;
-                        this.project.dayOfStartDev = 0;
-                        this.project.inProcess = false;
-                        testDept.getProject(this.project);
-                        this.project = null;
-                        this.busy = false;
-                        this.completedProjects++;
-                        this.notWorkingDays = 0;
-                    }
+                        if (day - this.project.dayOfStartDev == this.project.difficulty) {
+                            this.project.stage = 2;
+                            this.project.dayOfStartDev = 0;
+                            this.project.inProcess = false;
+                            testDept.getProject(this.project);
+                            this.project = null;
+                            this.busy = false;
+                            this.completedProjects++;
+                            this.notWorkingDays = 0;
+                        }
                 break;
             }
             case 'Mobile': {
                 if ((this.project != undefined) && (this.project != null))
-                    if (this.project.dayOfStartDev==0)
-                        this.project.dayOfStartDev=day;
+                    if (this.project.dayOfStartDev == 0)
+                        this.project.dayOfStartDev = day;
                     else
-                    if (((this.project.quantityOfDevelopers == this.project.difficulty) && (day - this.project.dayOfStartDev == 1)) || ((day - this.project.dayOfStartDev == this.project.difficulty) && (this.project.quantityOfDevelopers==1))) {
-                        this.project.stage = 2;
-                        this.dayOfStartDev = 0;
-                        this.project.inProcess = false;
-                        testDept.getProject(this.project);
-                        this.project = null;
-                        this.busy = false;
-                        this.completedProjects++;
-                        this.notWorkingDays = 0;
-                    }
+                        if (((this.project.quantityOfDevelopers == this.project.difficulty) && (day - this.project.dayOfStartDev == 1)) || ((day - this.project.dayOfStartDev == this.project.difficulty) && (this.project.quantityOfDevelopers == 1))) {
+                            this.project.stage = 2;
+                            this.dayOfStartDev = 0;
+                            this.project.inProcess = false;
+                            testDept.getProject(this.project);
+                            this.project = null;
+                            this.busy = false;
+                            this.completedProjects++;
+                            this.notWorkingDays = 0;
+                        }
                 break;
             }
             case 'Test': {
                 if ((this.project != undefined) && (this.project != null))
-                    if (this.project.dayOfStartDev==0)
-                        this.project.dayOfStartDev=day;
+                    if (this.project.dayOfStartDev == 0)
+                        this.project.dayOfStartDev = day;
                     else
-                    if (day - this.project.dayOfStartDev == 1) {
-                        this.project = null;
-                        this.busy = false;
-                        this.completedProjects++;
-                        s = 1;
-                        this.notWorkingDays = 0;
-                    }
+                        if (day - this.project.dayOfStartDev == 1) {
+                            this.project = null;
+                            this.busy = false;
+                            this.completedProjects++;
+                            s = 1;
+                            this.notWorkingDays = 0;
+                        }
                 break;
             }
         }
