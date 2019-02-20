@@ -16,7 +16,7 @@ class Company {
             this.quantityOfHiredEmployees += this.director.getEmployees(i, this.webDepartment);
             this.quantityOfHiredEmployees += this.director.getEmployees(i, this.mobileDepartment);
             this.quantityOfHiredEmployees += this.director.getEmployees(i, this.testDepartment);
-            s=this.director.getProjects(i);
+            s = this.director.getProjects(i);
             this.director.sentProjects(this.webDepartment);
             this.director.sentProjects(this.mobileDepartment);
             this.webDepartment.giveProjectsToEmployees();
@@ -29,8 +29,8 @@ class Company {
             this.quantityOfFiredEmployees += this.mobileDepartment.fireOut();
             this.quantityOfFiredEmployees += this.testDepartment.fireOut();
             this.quantityOfRealizedProjects += this.testDepartment.realizedProjects;
-            console.log(this.testDepartment.projects.length);
-            //console.log(s+'   '+this.quantityOfHiredEmployees+'   '+this.quantityOfRealizedProjects+'   '+this.quantityOfFiredEmployees);
+            console.log(this.mobileDepartment.employees.length);
+            //console.log(s + '   ' + this.quantityOfHiredEmployees + '   ' + this.quantityOfRealizedProjects + '   ' + this.quantityOfFiredEmployees);
         }
     }
 }
@@ -55,8 +55,8 @@ class Director {
         if (day != 1) {
             if (this.projects.length > 0)
                 for (var i = 0; i <= this.projects.length - 1; i++)
-                    if ((dept.type != 'Test') && (dept.type==this.projects[i].type)) {
-                        emp = new Employee(this.projects[i].type);
+                    if ((dept.type != 'Test') && (dept.type == this.projects[i].type)) {
+                        emp = new Employee(dept.type);
                         s++;
                         dept.getEmployees(emp);
                     }
@@ -74,7 +74,7 @@ class Director {
 
     sentProjects(dept) {
         var k;
-        if (dept.getFreeEmployees().length>0) {
+        if (dept.getFreeEmployees().length > 0) {
             var pr = this.projects.filter(function (item) {
                 return item.type == dept.type;
             });
@@ -204,13 +204,15 @@ class Department {
             }
             case 'Test': {
                 for (i = 0; i <= this.projects.length - 1; i++)
-                    for (j = 0; j <= this.employees.length - 1; j++)
-                        if (this.employees[j].busy == false) {
-                            this.employees[j].busy = true;
-                            this.projects[i].quantityOfDevelopers = 1;
-                            this.employees[j].getProject(this.projects[i]);
-                            break;
-                        }
+                    if (this.projects[i].inProcess == false)
+                        for (j = 0; j <= this.employees.length - 1; j++)
+                            if (this.employees[j].busy == false) {
+                                this.employees[j].busy = true;
+                                this.projects[i].quantityOfDevelopers = 1;
+                                this.projects[i].inProcess = true;
+                                this.employees[j].getProject(this.projects[i]);
+                                break;
+                            }
             }
         }
         this.projects = this.projects.filter(function (item) {
