@@ -29,7 +29,7 @@ class Company {
             this.quantityOfFiredEmployees += this.webDepartment.fireOut() + this.mobileDepartment.fireOut() + this.testDepartment.fireOut();
             this.quantityOfRealizedProjects = this.testDepartment.getRealizedProjects();
         }
-        console.log('Кол-во реализованных проектов: '+this.quantityOfRealizedProjects+'. Kол-во нанятых программистов: '+this.quantityOfHiredEmployees+'. Kол-во уволенных программистов: '+ this.quantityOfFiredEmployees);
+        console.log('Кол-во реализованных проектов: ' + this.quantityOfRealizedProjects + '. Kол-во нанятых программистов: ' + this.quantityOfHiredEmployees + '. Kол-во уволенных программистов: ' + this.quantityOfFiredEmployees);
 
     }
 }
@@ -48,22 +48,23 @@ class Director {
                 this.projects[this.projects.length] = new Project(day, ++this.quantityOfAllProjects);
     }
 
+    getEmployee(dept) {
+        var emp = new Employee(dept.getType());
+        dept.getEmployees(emp);
+        return 1;
+    }
+
     getEmployees(day, dept) {
-        var emp, s = 0;
+        var s = 0;
         if (day != 1) {
             if (this.projects.length > 0)
                 for (var i = 0; i <= this.projects.length - 1; i++)
-                    if ((dept.getType() != 'Test') && (dept.getType() == this.projects[i].type)) {
-                        emp = new Employee(dept.getType());
-                        s++;
-                        dept.getEmployees(emp);
-                    }
+                    if ((dept.getType() != 'Test') && (dept.getType() == this.projects[i].type)) 
+                        s+=this.getEmployee(dept)
+
             if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getFreeProjectsLength()) && (dept.getType() == 'Test'))
-                for (i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++) {
-                    emp = new Employee('Test');
-                    s++;
-                    dept.getEmployees(emp);
-                }
+                for (i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++) 
+                    s+=this.getEmployee(dept);
         }
         return s;
     }
