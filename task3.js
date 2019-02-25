@@ -11,7 +11,7 @@ class Company {
     }
 
     startWorking(day) {
-        var s, s1 = [];
+        var s1 = [];
         for (var i = 1; i <= day; i++) {
             s1[0] = this.director.getEmployees(i, this.webDepartment);
             s1[1] = this.director.getEmployees(i, this.mobileDepartment);
@@ -41,7 +41,7 @@ class Company {
 class Director {
     constructor() {
         this.projects = [];
-        this.quantityOfAllProjects = 0;
+        this.quantityOfAllProjects = 0;  //количество всех проектов, полученных компанией
     }
 
     getProjects(day) {
@@ -76,7 +76,7 @@ class Director {
 
     sentProjects(dept) {
         var k;
-        if (dept.getFreeEmployees().length > 0) {
+        if (dept.getFreeEmployeesLength() > 0) {
             var pr = this.projects.filter(function (item) {
                 return item.type == dept.GetType();
             });
@@ -142,6 +142,10 @@ class Department {
         });
     }
 
+    getFreeProjectsLength() {
+        return this.getFreeProjects().length;
+    }
+
     fireOut() { //увольнение
         var arr = [], min = 100, minID, s = 0;
         for (var i = 0; i <= this.employees.length - 1; i++)
@@ -169,11 +173,10 @@ class Department {
     }
 
     giveProjectsToEmployees() {  //передача проектов в руки разработчиков
-        var freeEmp, freeProj, s;
+        var s;
         switch (this.type) {
             case 'Web': {
                 for (var i = 0; i <= this.projects.length - 1; i++) {
-                    //if (this.projects[i].inProcess == false)
                     for (var j = 0; j <= this.employees.length - 1; j++) {
                         if (this.employees[j].busy == false) {
                             this.employees[j].busy = true;
@@ -188,8 +191,6 @@ class Department {
                 break;
             }
             case 'Mobile': {
-                freeEmp = this.getFreeEmployees().length;
-                freeProj = this.getFreeProjects().length;
                 for (i = 0; i <= this.projects.length - 1; i++)
                     for (j = 0; j <= this.employees.length - 1; j++)
                         if (this.employees[j].busy == false) {
@@ -200,11 +201,10 @@ class Department {
                             this.employees[j].getProject(this.projects[i]);
                             break;
                         }
-                if (freeEmp > freeProj) {
+                if (this.getFreeEmployeesLength() > this.getFreeProjectsLength()) {
                     for (i = 0; i <= this.projects.length - 1; i++) {
-                        freeEmp = this.getFreeEmployees().length;
                         s = this.projects[i].difficulty - this.projects[i].quantityOfDevelopers;
-                        if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (freeEmp >= s))
+                        if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (this.getFreeEmployeesLength() >= s))
                             for (j = 0; j <= this.employees.length - 1; j++)
                                 if ((this.employees[j].busy == false) && (s != 0)) {
                                     this.employees[j].busy = true;
