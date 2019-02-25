@@ -20,18 +20,17 @@ class Company {
             this.director.getProjects(i);
             this.director.sentProjects(this.webDepartment);
             this.director.sentProjects(this.mobileDepartment);
-            this.webDepartment.giveProjectsToEmployees(day);
-            this.mobileDepartment.giveProjectsToEmployees(day);
-            this.testDepartment.giveProjectsToEmployees(day);
+            this.webDepartment.giveProjectsToEmployees(i);
+            this.mobileDepartment.giveProjectsToEmployees(i);
+            this.testDepartment.giveProjectsToEmployees(i);
             this.webDepartment.completeProjects(i, this.testDepartment);
             this.mobileDepartment.completeProjects(i, this.testDepartment);
             this.testDepartment.completeProjects(i, this.testDepartment);
-            this.quantityOfFiredEmployees += this.webDepartment.fireOut();
-            this.quantityOfFiredEmployees += this.mobileDepartment.fireOut();
-            this.quantityOfFiredEmployees += this.testDepartment.fireOut();
+            this.quantityOfFiredEmployees += this.webDepartment.fireOut() + this.mobileDepartment.fireOut() + this.testDepartment.fireOut();
             this.quantityOfRealizedProjects = this.testDepartment.getRealizedProjects();
         }
-        console.log(this.quantityOfRealizedProjects + '   ' + this.quantityOfHiredEmployees + '   ' + this.quantityOfFiredEmployees);
+        console.log('Кол-во реализованных проектов: '+this.quantityOfRealizedProjects+'. Kол-во нанятых программистов: '+this.quantityOfHiredEmployees+'. Kол-во уволенных программистов: '+ this.quantityOfFiredEmployees);
+
     }
 }
 
@@ -108,7 +107,7 @@ class Department {
     getType() {
         return this.type;
     }
-    
+
     getRealizedProjects() {
         return this.realizedProjects;
     }
@@ -218,18 +217,17 @@ class Department {
                         for (j = 0; j <= this.employees.length - 1; j++)
                             if ((this.employees[j].project != undefined) && (this.projects[i].ID == this.employees[j].project.getID()))
                                 this.employees[j].project.quantityOfDevelopers = this.projects[i].quantityOfDevelopers;
-
                 }
                 break;
             }
             case 'Test': {
                 for (i = 0; i <= this.projects.length - 1; i++) {
                     for (j = 0; j <= this.employees.length - 1; j++)
-                        if (this.employees[j].busy == false) {
+                        if ((this.employees[j].busy == false) && (this.projects[i].inProcess == false)) {
                             this.employees[j].busy = true;
                             this.projects[i].quantityOfDevelopers = 1;
                             this.projects[i].inProcess = true;
-                            this.dayOfStartDev = day;
+                            this.projects[i].dayOfStartDev = day;
                             this.employees[j].getProject(this.projects[i]);
                             break;
                         }
