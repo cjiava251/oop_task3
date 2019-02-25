@@ -59,12 +59,12 @@ class Director {
         if (day != 1) {
             if (this.projects.length > 0)
                 for (var i = 0; i <= this.projects.length - 1; i++)
-                    if ((dept.getType() != 'Test') && (dept.getType() == this.projects[i].type)) 
-                        s+=this.getEmployee(dept)
+                    if ((dept.getType() != 'Test') && (dept.getType() == this.projects[i].type))
+                        s += this.getEmployee(dept)
 
             if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getFreeProjectsLength()) && (dept.getType() == 'Test'))
-                for (i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++) 
-                    s+=this.getEmployee(dept);
+                for (i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++)
+                    s += this.getEmployee(dept);
         }
         return s;
     }
@@ -171,6 +171,14 @@ class Department {
         return s;
     }
 
+    giveProject(emp,proj,quant,day) {
+        emp.busy = true;
+        proj.inProcess = true;
+        proj.quantityOfDevelopers = quant;
+        proj.dayOfStartDev = day;
+        emp.getProject(proj);
+    }
+
     giveProjectsToEmployees(day) {  //передача проектов в руки разработчиков
         var s;
         switch (this.type) {
@@ -178,11 +186,7 @@ class Department {
                 for (var i = 0; i <= this.projects.length - 1; i++) {
                     for (var j = 0; j <= this.employees.length - 1; j++) {
                         if (this.employees[j].busy == false) {
-                            this.employees[j].busy = true;
-                            this.projects[i].inProcess = true;
-                            this.projects[i].quantityOfDevelopers = 1;
-                            this.projects[i].dayOfStartDev = day;
-                            this.employees[j].getProject(this.projects[i]);
+                            this.giveProject(this.employees[j],this.projects[i],1,day);
                             break;
                         }
                     }
@@ -193,11 +197,7 @@ class Department {
                 for (i = 0; i <= this.projects.length - 1; i++)
                     for (j = 0; j <= this.employees.length - 1; j++)
                         if (this.employees[j].busy == false) {
-                            this.employees[j].busy = true;
-                            this.projects[i].inProcess = true;
-                            this.projects[i].quantityOfDevelopers = 1;
-                            this.projects[i].dayOfStartDev = day;
-                            this.employees[j].getProject(this.projects[i]);
+                            this.giveProject(this.employees[j],this.projects[i],1,day);
                             break;
                         }
                 if (this.getFreeEmployeesLength() > this.getFreeProjectsLength()) {
@@ -206,10 +206,7 @@ class Department {
                         if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (this.getFreeEmployeesLength() >= s))
                             for (j = 0; j <= this.employees.length - 1; j++)
                                 if ((this.employees[j].busy == false) && (s != 0)) {
-                                    this.employees[j].busy = true;
-                                    this.projects[i].quantityOfDevelopers++;
-                                    this.projects[i].dayOfStartDev = day;
-                                    this.employees[j].getProject(this.projects[i]);
+                                    this.giveProject(this.employees[j],this.projects[i],this.projects[i].quantityOfDevelopers++,day);
                                     s--;
                                 }
                     }
@@ -225,11 +222,7 @@ class Department {
                 for (i = 0; i <= this.projects.length - 1; i++) {
                     for (j = 0; j <= this.employees.length - 1; j++)
                         if ((this.employees[j].busy == false) && (this.projects[i].inProcess == false)) {
-                            this.employees[j].busy = true;
-                            this.projects[i].quantityOfDevelopers = 1;
-                            this.projects[i].inProcess = true;
-                            this.projects[i].dayOfStartDev = day;
-                            this.employees[j].getProject(this.projects[i]);
+                            this.giveProject(this.employees[j],this.projects[i],1,day);
                             break;
                         }
                 }
