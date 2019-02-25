@@ -30,8 +30,6 @@ class Company {
             this.quantityOfFiredEmployees += this.mobileDepartment.fireOut();
             this.quantityOfFiredEmployees += this.testDepartment.fireOut();
             this.quantityOfRealizedProjects = this.testDepartment.realizedProjects;
-
-            //console.log(this.quantityOfRealizedProjects+'   '+ this.quantityOfHiredEmployees + '   ' + s1[0] + '   ' + s1[1] + '   ' + s1[2] + '   ' + '   '+this.director.quantityOfAllProjects+'   '+this.quantityOfFiredEmployees);
         }
         console.log(this.quantityOfRealizedProjects + '   ' + this.quantityOfHiredEmployees + '   ' + this.quantityOfFiredEmployees);
     }
@@ -53,7 +51,7 @@ class Director {
     }
 
     getEmployees(day, dept) {
-        var emp, freeEmp, freeProj, s = 0;
+        var emp, s = 0;
         if (day != 1) {
             if (this.projects.length > 0)
                 for (var i = 0; i <= this.projects.length - 1; i++)
@@ -62,10 +60,8 @@ class Director {
                         s++;
                         dept.getEmployees(emp);
                     }
-            freeEmp = dept.getFreeEmployees().length;
-            freeProj = dept.getFreeProjects().length;
-            if ((dept.getProjectsLength() > 0) && (freeEmp < freeProj) && (dept.getType() == 'Test'))
-                for (i = 0; i <= freeProj - freeEmp - 1; i++) {
+            if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getFreeProjectsLength()) && (dept.getType() == 'Test'))
+                for (i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++) {
                     emp = new Employee('Test');
                     s++;
                     dept.getEmployees(emp);
