@@ -57,14 +57,14 @@ class Director {
         if (day != 1) {
             if (this.projects.length > 0)
                 for (var i = 0; i <= this.projects.length - 1; i++)
-                    if ((dept.type != 'Test') && (dept.type == this.projects[i].type)) {
-                        emp = new Employee(dept.type);
+                    if ((dept.getType() != 'Test') && (dept.getType() == this.projects[i].type)) {
+                        emp = new Employee(dept.getType());
                         s++;
                         dept.getEmployees(emp);
                     }
             freeEmp = dept.getFreeEmployees().length;
             freeProj = dept.getFreeProjects().length;
-            if ((dept.projects.length > 0) && (freeEmp < freeProj) && (dept.type == 'Test'))
+            if ((dept.getProjectsLength() > 0) && (freeEmp < freeProj) && (dept.getType() == 'Test'))
                 for (i = 0; i <= freeProj - freeEmp - 1; i++) {
                     emp = new Employee('Test');
                     s++;
@@ -78,15 +78,15 @@ class Director {
         var k;
         if (dept.getFreeEmployees().length > 0) {
             var pr = this.projects.filter(function (item) {
-                return item.type == dept.type;
+                return item.type == dept.GetType();
             });
-            if (pr.length <= dept.getFreeEmployees().length)
+            if (pr.length <= dept.getFreeEmployeesLength())
                 k = pr.length;
             else
-                k = dept.getFreeEmployees().length;
+                k = dept.getFreeEmployeeslength();
 
             for (var i = 0; i <= this.projects.length - 1; i++) {
-                if ((this.projects[i].type == dept.type) && (k > 0)) {
+                if ((this.projects[i].type == dept.getType()) && (k > 0)) {
                     this.projects[i].stage = 1;
                     dept.getProject(this.projects[i]);
                     k--;
@@ -109,6 +109,15 @@ class Department {
         this.type = Department.typeOfDepartment(type);
         this.realizedProjects = 0;
     }
+
+    getType() {
+        return this.type;
+    }
+
+    getProjectsLength() {
+        return this.projects.length;
+    }
+
     getProject(pr) {
         this.projects[this.projects.length] = pr;
     }
@@ -121,6 +130,10 @@ class Department {
         return this.employees.filter(function (item) {
             return item.busy == false;
         });
+    }
+
+    getFreeEmployeesLength() {
+        return this.getFreeEmployees().length;
     }
 
     getFreeProjects() {
