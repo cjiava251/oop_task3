@@ -338,6 +338,9 @@ class Project {
     this.dayOfStartDev = day;
     this.stage = 0;
   }
+  getNumber() {
+    return this.number;
+  }
 }
 
 class WebProject extends Project {
@@ -437,9 +440,10 @@ class QATester extends Employee {
     this.type = "Test";
   }
 
-  completeProject(day) {
+  completeProject(day, quantityOfCompletedProjects) {
     if ((this.project != null) && (day - this.project.dayOfStartDev == 1)) {
       this.sentOrDeleteProject();
+      quantityOfCompletedProjects++;
     }
   }
 }
@@ -470,7 +474,7 @@ class Department {
   }
   fireOut() {
     var arrayOfIndexes = [], min = 100, index;
-    for (var i = 0; i <= this.employees.length - 1; i++)
+    for (let i = 0; i <= this.employees.length - 1; i++)
       if (this.employees[i].getEmployment() > 3)
         arrayOfIndexes.push(i);
     if (arrayOfIndexes.length != 0) {
@@ -478,7 +482,7 @@ class Department {
         index = arrayOfIndexes[0];
       }
       else {
-        for (i = 0; i <= arrayOfIndexes.length - 1; i++) {
+        for (let i = 0; i <= arrayOfIndexes.length - 1; i++) {
           if (this.employees[arrayOfIndexes[i]].getQuantityOfCompletedProjects() < min) {
             min = this.employees[arrayOfIndexes[i]].getQuantityOfCompletedProjects();
             index = arrayOfIndexes[i];
@@ -489,12 +493,14 @@ class Department {
       return 1;
     }
   }
+
   giveProject(employee, project, quantity, day) {
     employee.busy = true;
     project.quantityOfDevelopers = quantity;
     project.dayOfStartDev = day;
-    if (project[0] != undefined) employee.getProject(project[0]);
+    if (project != undefined) employee.getProject(project);
   }
+
 }
 
 class WebDepartment extends Department {
@@ -511,7 +517,11 @@ class WebDepartment extends Department {
     this.employees.forEach(function (item) {
       if (item.busy == false)
         this.giveProject(item, this.projects.splice(0, 1), 1, day);
-    });
+    }, this);
+  }
+  workingDay(day, testDept) {
+    for (let i = 0; i <= this.employees.length - 1; i++)
+      this.employees[i].completeAndSentProjectForTest(day, testDept);
   }
 }
 
@@ -525,21 +535,51 @@ class MobileDepartment extends Department {
     return this.type;
   }
 
+  workingDay(day, testDept) {
+    for (let i = 0; i <= this.employees.length - 1; i++)
+      this.employees[i].completeAndSentProjectForTest(day, testDept);
+  }
+
+
   giveProjectsToEmployees(day) {
+    for (let i = 0; i <= this.projects.length - 1; i++)
+      for (let j = 0; j <= this.employees.length - 1; j++)
+        if (this.employees[j].busy == false) {
+          this.giveProject(this.employees[j], this.projects[i], 1, day);
+          break;
+        }
+    if (this.getFreeEmployeesLength() > this.getProjectsLength()) {
+      for (let i = 0; i <= this.projects.length - 1; i++) {
+        s = this.projects[i].difficulty - this.projects[i].quantityOfDevelopers;
+        if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (this.getFreeEmployeesLength() >= s))
+          for (let j = 0; j <= this.employees.length - 1; j++)
+            if ((this.employees[j].busy == false) && (s != 0)) {
+              this.giveProject(this.employees[j], this.projects[i], this.projects[i].quantityOfDevelopers++, day);
+              s--;
+            }
+      }
+
+      for (let i = 0; i <= this.projects.length - 1; i++)
+        for (let j = 0; j <= this.employees.length - 1; j++)
+          if ((this.employees[j].project != undefined) && (this.projects[i].number == this.employees[j].project.getNumber()))
+            this.employees[j].project.quantityOfDevelopers = this.projects[i].quantityOfDevelopers;
+    }
+    /*
     this.employees.forEach(function (item) {
       if (item.busy == false) {
         let project = this.projects.splice(0, 1);
-        if (project[0] != undefined)
+        if (project[0] != undefined) 
           this.giveProject(item, project[0], 1, day);
         else
           this.employees.forEach(function (employee) {
             if ((employee.busy == true) && (employee.getDayOfStartDevProject() == day) && (employee.getProjectDifficulty() - employee.getQuantityOfDevelopersOnProject() < this.getFreeEmployeesLength()) && (employee.project.getQuantityOfDevelopersOnProject() < employee.getProjectDifficulty())) {
               employee.project.increaseQuantityOfDevelopers();
-              item.giveProject(employee.project);
+              this.giveProject(item,employee.project,employee.getQuantityOfDevelopersOnProject(),day);
             }
-          });
+          },this);
       }
-    });
+    },this);
+    */
   }
 }
 
@@ -547,16 +587,37 @@ class TestDepartment extends Department {
   constructor() {
     super();
     this.type = "Test";
+    this.completedProjects = 0;
+  }
+
+  getCompletedProjects() {
+    return this.completedProjects;
+  }
+
+  checkProjectsForDublicates() {
+    for (let i = 0; i <= this.projects.length - 1; i++)
+      for (let j = 0; j <= this.projects.length - 1; j++)
+        if ((this.projects[i].number == this.projects[j].number) && (i != j))
+          this.projects[j] = null;
+    this.projects.filter(function (project) {
+      if (project != null) return project;
+    });
   }
 
   getType() {
     return this.type;
   }
   giveProjectsToEmployees() {
+    this.checkProjectsForDublicates();
     this.employees.forEach(function (item) {
       if (item.busy == false)
         this.giveProject(item, this.projects.splice(0, 1), 1, day);
     });
+  }
+
+  workingDay(day) {
+    for (let i = 0; i <= this.employees.length - 1; i++)
+      this.employees[i].completeProject(day, this.completedProjects);
   }
 }
 
@@ -576,9 +637,9 @@ class Director {
   }
 
   giveProjectsToDepartments(dept) {
-    this.projects.forEach(function(project) {
+    this.projects.forEach(function (project) {
       if (((project instanceof WebProject) && (dept instanceof WebDepartment)) || ((project instanceof MobileProject) && (dept instanceof MobileDepartment)))
-        dept.addProject(project,1);
+        dept.addProject(project, 1);
     });
   }
 
@@ -592,17 +653,17 @@ class Director {
   }
 
   hireEmployees(day, dept) {
-    var s = 0;
-    if (day != 1) {
+    var hired = 0;
+    if (day != 0) {
       for (let i = 0; i <= this.projects.length - 1; i++)
         if (dept.getType() == this.projects[i].type)
-          s += this.addEmployee(dept);
+          hired += this.addEmployee(dept);
 
-      if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getFreeProjectsLength()) && (dept instanceof TestDepartment))
+      if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getProjectsLength()) && (dept instanceof TestDepartment))
         for (let i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++)
-          s += this.addEmployee(dept);
+          hired += this.addEmployee(dept);
     }
-    return s;
+    return hired;
   }
 
 }
@@ -618,132 +679,25 @@ class Company {
     this.quantityOfFiredEmployees = 0;  //количество уволенных разработчиков
   }
 
-
+  startWorking(day) {
+    for (let i = 0; i <= day - 1; i++) {
+      this.quantityOfHiredEmployees += this.director.hireEmployees(i, this.webDepartment) + this.director.hireEmployees(i, this.mobileDepartment) + this.director.hireEmployees(i, this.testDepartment);
+      this.director.getProjects(i);
+      this.director.giveProjectsToDepartments(this.webDepartment);
+      this.director.giveProjectsToDepartments(this.mobileDepartment);
+      this.webDepartment.giveProjectsToEmployees(i);
+      this.mobileDepartment.giveProjectsToEmployees(i);
+      this.testDepartment.giveProjectsToEmployees(i);
+      this.webDepartment.workingDay(i, this.testDepartment);
+      this.mobileDepartment.workingDay(i, this.testDepartment);
+      this.testDepartment.workingDay(i);
+      this.quantityOfFiredEmployees += this.webDepartment.fireOut() + this.mobileDepartment.fireOut() + this.testDepartment.fireOut();
+      this.quantityOfCompletedProjects = this.testDepartment.getCompletedProjects();
+    }
+    console.log(this.mobileDepartment.projects);
+    //console.log('Кол-во реализованных проектов: ' + this.quantityOfCompletedProjects + '. Kол-во нанятых программистов: ' + this.quantityOfHiredEmployees + '. Kол-во уволенных программистов: ' + this.quantityOfFiredEmployees);
+  }
 }
 
-/*
-
-getProjects(day) {
-        var num = Math.round(Math.random() * 4);
-        if (num > 0)
-            for (var i = 0; i <= num - 1; i++)
-                this.projects[this.projects.length] = new Project(day, ++this.quantityOfAllProjects);
-    }
-
-    getEmployee(dept) {
-        var emp = new Employee(dept.getType());
-        dept.getEmployees(emp);
-        return 1;
-    }
-
-    getEmployees(day, dept) {
-        var s = 0;
-        if (day != 1) {
-            if (this.projects.length > 0)
-                for (var i = 0; i <= this.projects.length - 1; i++)
-                    if ((dept.getType() != 'Test') && (dept.getType() == this.projects[i].type))
-                        s += this.getEmployee(dept)
-
-            if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getFreeProjectsLength()) && (dept.getType() == 'Test'))
-                for (i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++)
-                    s += this.getEmployee(dept);
-        }
-        return s;
-    }
-
-    sentProjects(dept) {
-        var k;
-        if (dept.getFreeEmployeesLength() > 0) {
-            var pr = this.projects.filter(function (item) {
-                return item.type == dept.getType();
-            });
-            if (pr.length <= dept.getFreeEmployeesLength())
-                k = pr.length;
-            else
-                k = dept.getFreeEmployeesLength();
-
-            for (var i = 0; i <= this.projects.length - 1; i++) {
-                if ((this.projects[i].type == dept.getType()) && (k > 0)) {
-                    this.projects[i].stage = 1;
-                    dept.getProject(this.projects[i]);
-                    k--;
-                }
-            }
-        }
-        this.projects = this.projects.filter(function (item) {
-            return item.stage == 0;
-        });
-    }
-
-
-
-**************
-    giveProject(emp, proj, quant, day) {
-        emp.busy = true;
-        proj.inProcess = true;
-        proj.quantityOfDevelopers = quant;
-        proj.dayOfStartDev = day;
-        emp.getProject(proj);
-    }
-
-    giveProjectsToEmployees(day) {  //передача проектов в руки разработчиков
-        var s;
-        switch (this.type) {
-            case 'Web': {
-                for (var i = 0; i <= this.projects.length - 1; i++) {
-                    for (var j = 0; j <= this.employees.length - 1; j++) {
-                        if (this.employees[j].busy == false) {
-                            this.giveProject(this.employees[j], this.projects[i], 1, day);
-                            break;
-                        }
-                    }
-                }
-                break;
-            }
-            case 'Mobile': {
-                for (i = 0; i <= this.projects.length - 1; i++)
-                    for (j = 0; j <= this.employees.length - 1; j++)
-                        if (this.employees[j].busy == false) {
-                            this.giveProject(this.employees[j], this.projects[i], 1, day);
-                            break;
-                        }
-                if (this.getFreeEmployeesLength() > this.getFreeProjectsLength()) {
-                    for (i = 0; i <= this.projects.length - 1; i++) {
-                        s = this.projects[i].difficulty - this.projects[i].quantityOfDevelopers;
-                        if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (this.getFreeEmployeesLength() >= s))
-                            for (j = 0; j <= this.employees.length - 1; j++)
-                                if ((this.employees[j].busy == false) && (s != 0)) {
-                                    this.giveProject(this.employees[j], this.projects[i], this.projects[i].quantityOfDevelopers++, day);
-                                    s--;
-                                }
-                    }
-
-                    for (i = 0; i <= this.projects.length - 1; i++)
-                        for (j = 0; j <= this.employees.length - 1; j++)
-                            if ((this.employees[j].project != undefined) && (this.projects[i].ID == this.employees[j].project.getID()))
-                                this.employees[j].project.quantityOfDevelopers = this.projects[i].quantityOfDevelopers;
-                }
-                break;
-            }
-            case 'Test': {
-                for (i = 0; i <= this.projects.length - 1; i++) {
-                    for (j = 0; j <= this.employees.length - 1; j++)
-                        if ((this.employees[j].busy == false) && (this.projects[i].inProcess == false)) {
-                            this.giveProject(this.employees[j], this.projects[i], 1, day);
-                            break;
-                        }
-                }
-                break;
-            }
-        }
-
-        this.projects = this.projects.filter(function (item) {
-            return item.inProcess == false;
-        });
-    }
-
-    completeProjects(day, testDept) {
-        for (var i = 0; i <= this.employees.length - 1; i++)
-            this.realizedProjects += this.employees[i].completeProject(day, testDept);
-    }
-*/
+var apple = new Company;
+apple.startWorking(10);
