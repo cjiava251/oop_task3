@@ -341,6 +341,12 @@ class Project {
   getNumber() {
     return this.number;
   }
+  getDifficulty() {
+    return this.difficulty;
+  }
+  getDayOfStartDev() {
+    return this.dayOfStartDev;
+  }
 }
 
 class WebProject extends Project {
@@ -363,11 +369,12 @@ class MobileProject extends Project {
 }
 
 class Employee {
-  constructor() {
+  constructor(id) {
     this.completedProjects = 0;
     this.project = null;
     this.busy = false;
     this.notWorkingDays = 0;
+    this.personalID=id;
   }
 
   getEmployment() {
@@ -378,8 +385,15 @@ class Employee {
     return this.notWorkingDays;
   }
 
+  getBusy() {
+    return this.busy;
+  }
+
   getProject(project) {
     this.project = project;
+  }
+  getPersonalID() {
+    return this.personalID;
   }
 
   getQuantityOfCompletedProjects() {
@@ -406,14 +420,14 @@ class Employee {
 }
 
 class WebDeveloper extends Employee {
-  constructor() {
-    super();
+  constructor(id) {
+    super(id);
     this.type = "Web";
   }
 
 
   completeAndSentProjectForTest(day, testDept) {
-    if ((this.project != null) && (day - this.project.dayOfStartDev == this.project.difficulty)) {
+    if (this.project && (day - this.project.dayOfStartDev == this.project.difficulty)) {
       testDept.addProject(this.project, 2);
       this.sentOrDeleteProject();
     }
@@ -421,8 +435,8 @@ class WebDeveloper extends Employee {
 }
 
 class MobileDeveloper extends Employee {
-  constructor() {
-    super();
+  constructor(id) {
+    super(id);
     this.type = "Mobile";
   }
 
@@ -435,8 +449,8 @@ class MobileDeveloper extends Employee {
 }
 
 class QATester extends Employee {
-  constructor() {
-    super();
+  constructor(id) {
+    super(id);
     this.type = "Test";
   }
 
@@ -457,11 +471,15 @@ class Department {
   addProject(project, stage) {
     if (this.getFreeEmployeesLength() > 0) {
       this.projects.push(project);
-      this.projects[this.projects.length - 1].stage = stage;
+      project.stage = stage
     }
   }
   getProjectsLength() {
     return this.projects.length;
+  }
+  getFreeProjectsLength() {
+    let array=this.projects.filter(({quantityOfDevelopers}) => (quantityOfDevelopers==0));
+    return array.length;
   }
   addEmployees(employee) {
     this.employees.push(employee);
@@ -473,32 +491,22 @@ class Department {
     return this.getFreeEmployees().length;
   }
   fireOut() {
-    var arrayOfIndexes = [], min = 100, index;
-    for (let i = 0; i <= this.employees.length - 1; i++)
-      if (this.employees[i].getEmployment() > 3)
-        arrayOfIndexes.push(i);
-    if (arrayOfIndexes.length != 0) {
-      if (arrayOfIndexes.length == 1) {
-        index = arrayOfIndexes[0];
-      }
-      else {
-        for (let i = 0; i <= arrayOfIndexes.length - 1; i++) {
-          if (this.employees[arrayOfIndexes[i]].getQuantityOfCompletedProjects() < min) {
-            min = this.employees[arrayOfIndexes[i]].getQuantityOfCompletedProjects();
-            index = arrayOfIndexes[i];
-          }
-        }
-      }
-      this.employees.splice(index, 1)
-      return 1;
-    }
+    var employees=this.employees.filter(function(employee) {
+      return employee.getEmployment()>3;
+    });
+    employees.sort(function(a,b) {
+      return a.getQuantityOfCompletedProjects()-b.getQuantityOfCompletedProjects();
+    });
+    this.employees=this.employees.filter((employee) => {
+      return employee.getPersonalID()!=employees[0].getPersonalID();
+    });
   }
 
   giveProject(employee, project, quantity, day) {
     employee.busy = true;
     project.quantityOfDevelopers = quantity;
     project.dayOfStartDev = day;
-    if (project != undefined) employee.getProject(project);
+    if (project) employee.getProject(project);
   }
 
 }
@@ -514,10 +522,11 @@ class WebDepartment extends Department {
   }
 
   giveProjectsToEmployees(day) {
-    this.employees.forEach(function (item) {
-      if (item.busy == false)
-        this.giveProject(item, this.projects.splice(0, 1), 1, day);
-    }, this);
+    var i=0;
+    this.employees.forEach( (item) =>{
+      if ((item.getBusy() == false) && (i<this.projects.length))
+        this.giveProject(item, this.projects[i++], 1, day);
+    });
   }
   workingDay(day, testDept) {
     for (let i = 0; i <= this.employees.length - 1; i++)
@@ -542,44 +551,36 @@ class MobileDepartment extends Department {
 
 
   giveProjectsToEmployees(day) {
-    for (let i = 0; i <= this.projects.length - 1; i++)
-      for (let j = 0; j <= this.employees.length - 1; j++)
-        if (this.employees[j].busy == false) {
-          this.giveProject(this.employees[j], this.projects[i], 1, day);
-          break;
+    var i=0, flag;
+    this.employees=this.employees.map((employee) => {
+      if ((!employee.getBusy()) && (i<this.projects.length)) 
+        this.giveProject(employee,this.projects[i++],1,day);
+        return employee;
+    });
+    if (this.getFreeEmployeesLength()>0) {
+      this.employees=this.employees.map((employee) => {
+        if (!employee.getBusy()) {
+          flag=false;
+          this.projects=this.projects.map((project) => {
+            if ((project.getDifficulty()==2) && (project.getDayOfStartDev()==day) && (flag!=true)) {
+              this.giveProject(employee,project,2,day);
+              flag=true;
+            }
+            return project;
+          });
         }
-    if (this.getFreeEmployeesLength() > this.getProjectsLength()) {
-      for (let i = 0; i <= this.projects.length - 1; i++) {
-        s = this.projects[i].difficulty - this.projects[i].quantityOfDevelopers;
-        if ((this.projects[i].difficulty != this.projects[i].quantityOfDevelopers) && (this.getFreeEmployeesLength() >= s))
-          for (let j = 0; j <= this.employees.length - 1; j++)
-            if ((this.employees[j].busy == false) && (s != 0)) {
-              this.giveProject(this.employees[j], this.projects[i], this.projects[i].quantityOfDevelopers++, day);
-              s--;
-            }
-      }
-
-      for (let i = 0; i <= this.projects.length - 1; i++)
-        for (let j = 0; j <= this.employees.length - 1; j++)
-          if ((this.employees[j].project != undefined) && (this.projects[i].number == this.employees[j].project.getNumber()))
-            this.employees[j].project.quantityOfDevelopers = this.projects[i].quantityOfDevelopers;
+        return employee;
+      });
     }
-    /*
-    this.employees.forEach(function (item) {
-      if (item.busy == false) {
-        let project = this.projects.splice(0, 1);
-        if (project[0] != undefined) 
-          this.giveProject(item, project[0], 1, day);
-        else
-          this.employees.forEach(function (employee) {
-            if ((employee.busy == true) && (employee.getDayOfStartDevProject() == day) && (employee.getProjectDifficulty() - employee.getQuantityOfDevelopersOnProject() < this.getFreeEmployeesLength()) && (employee.project.getQuantityOfDevelopersOnProject() < employee.getProjectDifficulty())) {
-              employee.project.increaseQuantityOfDevelopers();
-              this.giveProject(item,employee.project,employee.getQuantityOfDevelopersOnProject(),day);
-            }
-          },this);
-      }
-    },this);
-    */
+    this.projects=this.projects.map((project) => {
+      if ((this.getFreeEmployeesLength()>1) && (project.getDifficulty()==3) && (project.getDayOfStartDev()==day)) 
+        this.employees=this.employees.map((employee) => {
+          if ((!employee.getBusy()) && (project.getQuantityOfDevelopersOnProject()!=3))
+            this.giveProject(employee,project,++project.quantityOfDevelopers,day);
+          return employee;
+        });
+      return project;
+    });
   }
 }
 
@@ -625,6 +626,7 @@ class Director {
   constructor() {
     this.projects = [];
     this.quantityOfAllProjects = 0;
+    this.quantityOfAllHiredEmployees=0;
   }
   getProjects(day) {
     var rndNumber1 = Math.round(Math.random() * 4);  //общее количество полученных проектов за день
@@ -644,26 +646,24 @@ class Director {
   }
 
   addEmployee(dept) {
-    if (dept instanceof WebDepartment)
-      dept.addEmployees(new WebDeveloper);
+    if (dept instanceof WebDepartment) 
+      dept.addEmployees(new WebDeveloper(this.quantityOfAllHiredEmployees++));
     if (dept instanceof MobileDepartment)
-      dept.addEmployees(new MobileDeveloper);
+      dept.addEmployees(new MobileDeveloper(this.quantityOfAllHiredEmployees++));
     if (dept instanceof TestDepartment)
-      dept.addEmployees(new QATester);
+      dept.addEmployees(new QATester(this.quantityOfAllHiredEmployees++));
   }
 
   hireEmployees(day, dept) {
-    var hired = 0;
     if (day != 0) {
       for (let i = 0; i <= this.projects.length - 1; i++)
         if (dept.getType() == this.projects[i].type)
-          hired += this.addEmployee(dept);
+          this.addEmployee(dept);
 
       if ((dept.getProjectsLength() > 0) && (dept.getFreeEmployeesLength() < dept.getProjectsLength()) && (dept instanceof TestDepartment))
         for (let i = 0; i <= dept.getFreeProjectsLength() - dept.getFreeEmployeesLength() - 1; i++)
-          hired += this.addEmployee(dept);
+          this.addEmployee(dept);
     }
-    return hired;
   }
 
 }
