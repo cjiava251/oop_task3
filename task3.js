@@ -352,7 +352,7 @@ class Project {
 class WebProject extends Project {
   constructor(number, day) {
     super(number, day);
-    this.type = "Web";
+    //this.type = "Web";
     this.quantityOfDevelopers = 1;
   }
 }
@@ -360,7 +360,7 @@ class WebProject extends Project {
 class MobileProject extends Project {
   constructor(number, day) {
     super(number, day);
-    this.type = "Mobile";
+    //this.type = "Mobile";
     this.quantityOfDevelopers;
   }
   increaseQuantityOfDevelopers() {
