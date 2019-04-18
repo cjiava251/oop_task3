@@ -1,5 +1,3 @@
-
-
 class Project {
   constructor(number, day) {
     this.difficulty = Math.round(Math.random() * 2) + 1;
@@ -88,7 +86,6 @@ class WebDeveloper extends Employee {
     super(id);
   }
 
-
   completeAndSentProjectForTest(day, testDept) {
     if (this.project && (day - this.project.dayOfStartDev == this.project.difficulty)) {
       testDept.addProject(this.project, 2);
@@ -161,11 +158,12 @@ class Department {
       employees.sort((a, b) => {
         return a.getQuantityOfCompletedProjects() - b.getQuantityOfCompletedProjects();
       });
-      if (employees[0])
-      firedEmployee = employees[0].getPersonalID();
-      this.employees = this.employees.filter((employee) => {
-        return employee.getPersonalID() != firedEmployee;
-      });
+      if (employees[0]) {
+        firedEmployee = employees[0].getPersonalID();
+        this.employees = this.employees.filter((employee) => {
+          return employee.getPersonalID() != firedEmployee;
+        });
+      }
     }
   }
 
@@ -206,7 +204,6 @@ class MobileDepartment extends Department {
       this.employees[i].completeAndSentProjectForTest(day, testDept);
   }
 
-
   giveProjectsToEmployees(day) {
     var i = 0, flag;
     this.employees = this.employees.map((employee) => {
@@ -219,7 +216,7 @@ class MobileDepartment extends Department {
         if (!employee.getBusy()) {
           flag = false;
           this.projects = this.projects.map((project) => {
-            if ((project.getDifficulty() == 2) && (project.getDayOfStartDev() == day) && (flag != true)) {
+            if ((project.getDifficulty() == 2) && (project.getDayOfStartDev() == day) && (!flag)) {
               this.giveProject(employee, project, 2, day);
               flag = true;
             }
@@ -274,6 +271,7 @@ class TestDepartment extends Department {
       this.employees[i].completeProject(day, this.completedProjects);
   }
 }
+
 class Director {
   constructor() {
     this.projects = [];
@@ -345,8 +343,8 @@ class Company {
       this.quantityOfFiredEmployees += this.webDepartment.fireOut() + this.mobileDepartment.fireOut() + this.testDepartment.fireOut();
       this.quantityOfCompletedProjects = this.testDepartment.getCompletedProjects();
     }
-    console.log(this.mobileDepartment.projects);
-    //console.log('Кол-во реализованных проектов: ' + this.quantityOfCompletedProjects + '. Kол-во нанятых программистов: ' + this.quantityOfHiredEmployees + '. Kол-во уволенных программистов: ' + this.quantityOfFiredEmployees);
+    //console.log(this.mobileDepartment.projects);
+    console.log('Кол-во реализованных проектов: ' + this.quantityOfCompletedProjects + '. Kол-во нанятых программистов: ' + this.quantityOfHiredEmployees + '. Kол-во уволенных программистов: ' + this.quantityOfFiredEmployees);
   }
 }
 
