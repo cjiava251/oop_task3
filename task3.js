@@ -331,6 +331,7 @@ apple.startWorking(40);
 
 */
 
+
 class Project {
   constructor(number, day) {
     this.difficulty = Math.round(Math.random() * 2) + 1;
