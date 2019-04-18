@@ -128,7 +128,12 @@ class Department {
     this.projects = [];
     this.employees = [];
   }
-
+  getFreeEmployees() {
+    return this.employees.filter(({ busy }) => (!busy));
+  }
+  addEmployees(employee) {
+    this.employees.push(employee);
+  }
   addProject(project, stage) {
     if (this.getFreeEmployeesLength() > 0) {
       this.projects.push(project);
@@ -142,27 +147,26 @@ class Department {
     let array = this.projects.filter(({ quantityOfDevelopers }) => (quantityOfDevelopers == 0));
     return array.length;
   }
-  addEmployees(employee) {
-    this.employees.push(employee);
-  }
-  getFreeEmployees() {
-    return this.employees.filter(({ busy }) => (!busy));
-  }
+
   getFreeEmployeesLength() {
     return this.getFreeEmployees().length;
   }
+
   fireOut() {
-    var employee = this.employees.filter((employee) => {
+    var employees = [], firedEmployee;
+    employees = this.employees.filter((employee) => {
       return employee.getEmployment() > 3;
     });
-    employee.sort((a, b) => {
-      return a.getQuantityOfCompletedProjects() - b.getQuantityOfCompletedProjects();
-    });
-    if (employee[0])
-      var filteredEmployees = this.employees.filter((employee) => {
-        return employee.getPersonalID() != employee[0].getPersonalID();
+    if (employees) {
+      employees.sort((a, b) => {
+        return a.getQuantityOfCompletedProjects() - b.getQuantityOfCompletedProjects();
       });
-    this.employees = filteredEmployees;
+      if (employees[0])
+      firedEmployee = employees[0].getPersonalID();
+      this.employees = this.employees.filter((employee) => {
+        return employee.getPersonalID() != firedEmployee;
+      });
+    }
   }
 
   giveProject(employee, project, quantity, day) {
