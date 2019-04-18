@@ -269,7 +269,6 @@ class TestDepartment extends Department {
       this.employees[i].completeProject(day, this.completedProjects);
   }
 }
-
 class Director {
   constructor() {
     this.projects = [];
