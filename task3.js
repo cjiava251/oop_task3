@@ -124,6 +124,10 @@ class Department {
   constructor() {
     this.projects = [];
     this.employees = [];
+    this.quantityOfFiredEmployees=0;
+  }
+  getQuantityOfFiredEmployees() {
+    return this.quantityOfFiredEmployees;
   }
   getFreeEmployees() {
     return this.employees.filter(({ busy }) => (!busy));
@@ -163,6 +167,7 @@ class Department {
         this.employees = this.employees.filter((employee) => {
           return employee.getPersonalID() != firedEmployee;
         });
+        this.quantityOfFiredEmployees++;
       }
     }
   }
@@ -257,6 +262,7 @@ class TestDepartment extends Department {
       if (project != null) return project;
     });
   }
+  
 
   giveProjectsToEmployees() {
     this.checkProjectsForDublicates();
@@ -330,7 +336,10 @@ class Company {
 
   startWorking(day) {
     for (let i = 0; i <= day - 1; i++) {
-      this.quantityOfHiredEmployees += this.director.hireEmployees(i, this.webDepartment) + this.director.hireEmployees(i, this.mobileDepartment) + this.director.hireEmployees(i, this.testDepartment);
+      //this.quantityOfHiredEmployees += this.director.hireEmployees(i, this.webDepartment) + this.director.hireEmployees(i, this.mobileDepartment) + this.director.hireEmployees(i, this.testDepartment);
+      this.director.hireEmployees(i,this.webDepartment);
+      this.director.hireEmployees(i,this.mobileDepartment);
+      this.director.hireEmployees(i,this.testDepartment);
       this.director.getProjects(i);
       this.director.giveProjectsToDepartments(this.webDepartment);
       this.director.giveProjectsToDepartments(this.mobileDepartment);
@@ -343,6 +352,8 @@ class Company {
       this.quantityOfFiredEmployees += this.webDepartment.fireOut() + this.mobileDepartment.fireOut() + this.testDepartment.fireOut();
       this.quantityOfCompletedProjects = this.testDepartment.getCompletedProjects();
     }
+    this.quantityOfHiredEmployees=this.director.quantityOfAllHiredEmployees;
+    this.quantityOfFiredEmployees=this.webDepartment.getQuantityOfFiredEmployees();
     //console.log(this.mobileDepartment.projects);
     console.log('Кол-во реализованных проектов: ' + this.quantityOfCompletedProjects + '. Kол-во нанятых программистов: ' + this.quantityOfHiredEmployees + '. Kол-во уволенных программистов: ' + this.quantityOfFiredEmployees);
   }
