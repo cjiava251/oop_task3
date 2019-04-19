@@ -1,6 +1,142 @@
 class Project {
-  constructor(number, day) {
+  constructor(number) {
     this.difficulty = Math.round(Math.random() * 2) + 1;
+    this.stage = 0;
+    this.number = number;
+  }
+
+  getNumber() {
+    return this.number;
+  }
+
+  setStage(stage) {
+    this.stage = stage;
+  }
+  getStage() {
+    return this.stage;
+  }
+}
+
+class WebProject extends Project {
+  constructor() {
+    super();
+  }
+}
+
+class MobileProject extends Project {
+  constructor() {
+    super();
+    this.quantityOfDevelopers = 0;
+  }
+}
+
+class Employee {
+  constructor() {
+    this.completedProjects = 0;
+    this.project = null;
+    this.notWorkingDays = 0;
+    this.busy = false;
+    //this.personalID = id;
+  }
+  setProject(project) {
+    this.project = project;
+  }
+}
+
+class WebDeveloper extends Employee {
+  constructor() {
+    super();
+  }
+
+
+}
+
+class MobileDeveloper extends Employee {
+  constructor() {
+    super();
+  }
+}
+
+class QATester extends Employee {
+  constructor() {
+    super();
+  }
+}
+
+class Department {
+  constructor() {
+    this.projects = [];
+    this.employees = [];
+  }
+  getProjects(projects) {
+    this.projects.concat(projects)
+  }
+  getFreeEmployees() {
+    return this.employees.filter(({ busy }) => (!busy));
+  }
+  getFreeEmployeesLength() {
+    return getFreeEmployees().length;
+  }
+
+}
+
+class WebDepartment extends Department {
+  constructor() {
+    super();
+  }
+}
+
+class MobileDepartment extends Department {
+  constructor() {
+    super();
+  }
+}
+
+class TestDepartment extends Department {
+  constructor() {
+    super();
+  }
+}
+
+class Director {
+  constructor() {
+    this.webProjects = [];
+    this.mobileProjects = [];
+    this.quantityOfAllProjects = 0;
+    this.quantityOfAllHiredEmployees = 0;
+  }
+
+  getProjects() {
+    var rndNumber1 = Math.round(Math.random() * 4);  //общее количество полученных проектов за день
+    var rndNumber2 = Math.round(Math.random() * rndNumber1);  //количество веб проектов
+    for (let i = 0; i <= rndNumber1 - 1; i++)
+      if (i <= rndNumber2)
+        this.webProjects.push(new WebProject);
+      else
+        this.mobileProjects.push(new MobileProject);
+  }
+
+  giveProjects(dept) {
+    var projects = [];
+    if (dept instanceof WebDepartment) {
+      projects = this.webProjects.splice(0, Math.min(this.webProjects.length, dept.getFreeEmployeesLength()));
+    }
+    else if (dept instanceof MobileDepartment)
+      projects = this.mobileProjects.splice(0, Math.min(this.mobileProjects.length, dept.getFreeEmployeesLength()));
+    dept.getProjects(projects);
+  }
+
+  hireEmployees(dept) {
+    if ((dept instanceof WebDepartment) && (this.webProjects.length>dept.getFreeEmployeesLength)) {
+      
+    }
+  }
+}
+
+/*
+class Project {
+  constructor(number, day) {
+
     this.number = number;
     this.dayOfStartDev = day;
     this.stage = 0;
@@ -14,12 +150,13 @@ class Project {
   getDayOfStartDev() {
     return this.dayOfStartDev;
   }
+
 }
 
 class WebProject extends Project {
   constructor(number, day) {
     super(number, day);
-    this.quantityOfDevelopers = 1;
+    //this.quantityOfDevelopers = 1;
   }
 }
 
@@ -262,7 +399,7 @@ class TestDepartment extends Department {
       if (project != null) return project;
     });
   }
-  
+
 
   giveProjectsToEmployees() {
     this.checkProjectsForDublicates();
@@ -280,26 +417,33 @@ class TestDepartment extends Department {
 
 class Director {
   constructor() {
-    this.projects = [];
+    this.webProjects = [];
+    this.mobileProjects=[];
     this.quantityOfAllProjects = 0;
     this.quantityOfAllHiredEmployees = 0;
   }
+
   getProjects(day) {
     var rndNumber1 = Math.round(Math.random() * 4);  //общее количество полученных проектов за день
     var rndNumber2 = Math.round(Math.random() * rndNumber1);  //количество веб проектов
     for (let i = 0; i <= rndNumber1 - 1; i++)
       if (i <= rndNumber2)
-        this.projects.push(new WebProject(++this.quantityOfAllProjects, day));
+        this.webProjects.push(new WebProject(++this.quantityOfAllProjects, day));
       else
-        this.projects.push(new MobileProject(++this.quantityOfAllProjects, day));
+        this.mobileProjects.push(new MobileProject(++this.quantityOfAllProjects, day));
   }
 
-  giveProjectsToDepartments(dept) {
-    this.projects.forEach(function (project) {
-      if (((project instanceof WebProject) && (dept instanceof WebDepartment)) || ((project instanceof MobileProject) && (dept instanceof MobileDepartment)))
-        dept.addProject(project, 1);
-    });
+  giveProjectsToDepartments(webDept,mobileDept) {
+    var minProjectsCount=Math.min(webDept.getFreeEmployeesLength(),this.webProjects.length);
+    var array=this.mobileProjects.splice(0,minProjectsCount);
+    webDept.projects.concat(array);
+    minProjectsCount=Math.min(mobileDept.getFreeEmployeesLength(),this.mobileProjects.length);
+    array=this.webProjects.splice(0,minProjectsCount);
+    mobileDept.projects.concat(array);
+    //webDept.projects.concat(this.webProjects.splice(0,min1));
+    //mobileDept.projects.concat(this.mobileProjects.splice(0,min2));
   }
+
 
   addEmployee(dept) {
     if (dept instanceof WebDepartment)
@@ -361,3 +505,5 @@ class Company {
 
 var apple = new Company;
 apple.startWorking(10);
+
+*/
