@@ -1,10 +1,16 @@
 class Project {
-  constructor(number) {
+  constructor(number, day) {
     this.difficulty = Math.round(Math.random() * 2) + 1;
     this.stage = 0;
     this.number = number;
+    this.dayOfStartDev = day;
   }
-
+  setDayOfStartDev(day) {
+    this.dayOfStartDev = day;
+  }
+  getDayOfStartDev() {
+    return this.dayOfStartDev;
+  }
   getNumber() {
     return this.number;
   }
@@ -14,6 +20,9 @@ class Project {
   }
   getStage() {
     return this.stage;
+  }
+  getDifficulty() {
+    return this.difficulty;
   }
 }
 
@@ -28,18 +37,36 @@ class MobileProject extends Project {
     super();
     this.quantityOfDevelopers = 0;
   }
+  setQuantityOfDevelopers(quantityOfDevelopers) {
+    this.quantityOfDevelopers = quantityOfDevelopers;
+  }
+  getQuantityOfDevelopers() {
+    return this.quantityOfDevelopers;
+  }
 }
 
 class Employee {
-  constructor() {
+  constructor(id) {
     this.completedProjects = 0;
     this.project = null;
     this.notWorkingDays = 0;
     this.busy = false;
-    //this.personalID = id;
+    this.personalID = id;
   }
   setProject(project) {
     this.project = project;
+  }
+  getEmployment() {
+    return this.notWorkingDays;
+  }
+  setNotWorkingDays() {
+    this.notWorkingDays++;
+  }
+  getQuantityOfCompletedProjects() {
+    return this.completedProjects;
+  }
+  getPersonalID() {
+    return this.personalID;
   }
 }
 
@@ -47,19 +74,46 @@ class WebDeveloper extends Employee {
   constructor() {
     super();
   }
-
-
+  completeProject(day, dept) {
+    if ((this.project) && (day - this.project.getDayOfStartDev() == this.project.getDifficulty())) {
+      this.project.setStage(2);
+      this.project.setDayOfStartDev(day);
+      dept.getProjects(this.project);
+      this.project = null;
+      this.busy = false;
+      this.completedProjects++;
+    }
+  }
 }
 
 class MobileDeveloper extends Employee {
   constructor() {
     super();
   }
+  completeProject(day, dept) {
+    if (this.project) {
+      if (((day - this.project.getDayOfStartDev() == this.project.getDifficulty()) && (this.project.getQuantityOfDevelopers() == 1)) || ((day - this.project.getDayOfStartDev() == 1) && (this.project.getQuantityOfDevelopers() == this.project.getDifficulty()))) {
+        this.project.setStage(2);
+        this.project.setDayOfStartDev(day);
+        dept.getProjects(this.project);
+        this.project = null;
+        this.busy = false;
+        this.completedProjects++;
+      }
+    }
+  }
 }
 
 class QATester extends Employee {
   constructor() {
     super();
+  }
+  completeProject() {
+    if ((this.project) && (day - this.project.getDayOfStartDev() == 1)) {
+      this.project = null;
+      this.busy = false;
+      this.completedProjects++;
+    }
   }
 }
 
@@ -69,13 +123,24 @@ class Department {
     this.employees = [];
   }
   getProjects(projects) {
-    this.projects.concat(projects)
+    this.projects.concat(projects);
+  }
+  getProjectsLength() {
+    return this.projects.length;
+  }
+  getEmployees(employees) {
+    this.employees.concat(employees);
   }
   getFreeEmployees() {
     return this.employees.filter(({ busy }) => (!busy));
   }
   getFreeEmployeesLength() {
     return getFreeEmployees().length;
+  }
+  deleteProject(num) {
+    this.projects = this.projects.filter(({ number }) => {
+      return number != num;
+    });
   }
 
 }
@@ -104,6 +169,7 @@ class Director {
     this.mobileProjects = [];
     this.quantityOfAllProjects = 0;
     this.quantityOfAllHiredEmployees = 0;
+    this.quantityOfFiredEmployees = 0;
   }
 
   getProjects() {
@@ -127,11 +193,103 @@ class Director {
   }
 
   hireEmployees(dept) {
-    if ((dept instanceof WebDepartment) && (this.webProjects.length>dept.getFreeEmployeesLength)) {
-      
+    var employees = [];
+    if (dept instanceof WebDepartment) {
+      for (let i = 0; i <= this.webProjects.length - dept.getFreeEmployeesLength() - 1; i++)
+        employees.push(new WebDeveloper);
+    } else
+      if (dept instanceof MobileDepartment) {
+        for (let i = 0; i <= this.mobileProjects.length - dept.getFreeEmployeesLength() - 1; i++)
+          employees.push(new MobileDeveloper);
+      } else
+        if (dept instanceof TestDepartment) {
+          for (let i = 0; i <= dept.getProjectsLength() - dept.getFreeEmployeesLength() - 1; i++) {
+            employees.push(new QATester);
+          }
+        }
+    dept.getEmployees(employees);
+  }
+
+  fireOut(dept) {
+    var employees = dept.employees.filter((employee) => {
+      return employee.getEmployment() > 3;
+    });
+    employees.sort((a, b) => {
+      return a.getQuantityOfCompletedProjects() - b.getQuantityOfCompletedProjects();
+    });
+    if (employees[0]) {
+      dept.employees = dept.employees.filter((emplyee) => {
+        return emplyee.getPersonalID() != employees[0].getPersonalID();
+      });
+      this.quantityOfFiredEmployees++;
     }
   }
 }
+
+
+class Company {
+  constructor() {
+    this.director=new Director;
+    this.webDepartment=new WebDepartment;
+    this.mobileDepartment=new MobileDepartment;
+    this.testDepartment=new TestDepartment;
+    this.quantityOfCompletedProjects=0;
+    this.quantityOfHiredEmployees=0;
+    this.quantityOfFiredEmployees=0;
+  }
+  startWorking(day) {
+    for (let i=0;i<=day-1;i++) {
+      this.director.getProjects();
+      this.director.giveProjects(this.webDepartment);
+      this.director.giveProjects(this.mobileDepartment);
+      this.director.hireEmployees(this.webDepartment);
+      this.director.hireEmployees(this.mobileDepartment);
+      this.director.hireEmployees(this.testDepartment);
+      
+
+    }
+  }
+}
+
+/*
+
+class Company {
+  constructor() {
+    this.director = new Director;
+    this.webDepartment = new WebDepartment();
+    this.mobileDepartment = new MobileDepartment();
+    this.testDepartment = new TestDepartment();
+    this.quantityOfCompletedProjects = 0;  //количество реализованных проектов
+    this.quantityOfHiredEmployees = 0;  //количество нанятых разработчиков
+    this.quantityOfFiredEmployees = 0;  //количество уволенных разработчиков
+  }
+
+  startWorking(day) {
+    for (let i = 0; i <= day - 1; i++) {
+      //this.quantityOfHiredEmployees += this.director.hireEmployees(i, this.webDepartment) + this.director.hireEmployees(i, this.mobileDepartment) + this.director.hireEmployees(i, this.testDepartment);
+      this.director.hireEmployees(i,this.webDepartment);
+      this.director.hireEmployees(i,this.mobileDepartment);
+      this.director.hireEmployees(i,this.testDepartment);
+      this.director.getProjects(i);
+      this.director.giveProjectsToDepartments(this.webDepartment);
+      this.director.giveProjectsToDepartments(this.mobileDepartment);
+      this.webDepartment.giveProjectsToEmployees(i);
+      this.mobileDepartment.giveProjectsToEmployees(i);
+      this.testDepartment.giveProjectsToEmployees(i);
+      this.webDepartment.workingDay(i, this.testDepartment);
+      this.mobileDepartment.workingDay(i, this.testDepartment);
+      this.testDepartment.workingDay(i);
+      this.quantityOfFiredEmployees += this.webDepartment.fireOut() + this.mobileDepartment.fireOut() + this.testDepartment.fireOut();
+      this.quantityOfCompletedProjects = this.testDepartment.getCompletedProjects();
+    }
+    this.quantityOfHiredEmployees=this.director.quantityOfAllHiredEmployees;
+    this.quantityOfFiredEmployees=this.webDepartment.getQuantityOfFiredEmployees();
+    //console.log(this.mobileDepartment.projects);
+    console.log('Кол-во реализованных проектов: ' + this.quantityOfCompletedProjects + '. Kол-во нанятых программистов: ' + this.quantityOfHiredEmployees + '. Kол-во уволенных программистов: ' + this.quantityOfFiredEmployees);
+  }
+}
+*/
+
 
 /*
 class Project {
