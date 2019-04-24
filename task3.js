@@ -27,14 +27,14 @@ class Project {
 }
 
 class WebProject extends Project {
-  constructor(number,day) {
-    super(number,day);
+  constructor(number, day) {
+    super(number, day);
   }
 }
 
 class MobileProject extends Project {
-  constructor(number,day) {
-    super(number,day);
+  constructor(number, day) {
+    super(number, day);
     this.quantityOfDevelopers = 0;
   }
   setQuantityOfDevelopers(quantityOfDevelopers) {
@@ -66,7 +66,7 @@ class Employee {
     return this.personalID;
   }
   setBusy(busy) {
-    this.busy=busy;
+    this.busy = busy;
   }
 }
 
@@ -74,7 +74,7 @@ class WebDeveloper extends Employee {
   constructor(id) {
     super(id);
   }
-  completeProject(day,testDept, dept) {
+  completeProject(day, testDept, dept) {
     if ((this.project) && (day - this.project.getDayOfStartDev() == this.project.getDifficulty())) {
       this.project.setStage(2);
       this.project.setDayOfStartDev(day);
@@ -83,9 +83,9 @@ class WebDeveloper extends Employee {
       this.project = null;
       this.busy = false;
       this.completedProjects++;
-      this.notWorkingDays=0;
+      this.notWorkingDays = 0;
     } else
-    this.notWorkingDays++;
+      this.notWorkingDays++;
   }
 }
 
@@ -93,19 +93,19 @@ class MobileDeveloper extends Employee {
   constructor(id) {
     super(id);
   }
-  completeProject(day, testDept,dept) {
+  completeProject(day, testDept, dept) {
     if (this.project) {
       if (((day - this.project.getDayOfStartDev() == this.project.getDifficulty()) && (this.project.getQuantityOfDevelopers() == 1)) || ((day - this.project.getDayOfStartDev() == 1) && (this.project.getQuantityOfDevelopers() == this.project.getDifficulty()))) {
         this.project.setStage(2);
         this.project.setDayOfStartDev(day);
         testDept.getProjects(this.project);
-        //dept.deleteProject(this.project.getNumber());
+        dept.deleteProject(this.project.getNumber());
         this.project = null;
         this.busy = false;
         this.completedProjects++;
-        this.notWorkingDays=0;
+        this.notWorkingDays = 0;
       } else
-      this.notWorkingDays++;
+        this.notWorkingDays++;
     }
   }
 }
@@ -114,15 +114,16 @@ class QATester extends Employee {
   constructor(id) {
     super(id);
   }
-  completeProject(day,dept) {
+  completeProject(day, dept) {
     if ((this.project) && (day - this.project.getDayOfStartDev() == 1)) {
-      //dept.deleteProject(this.project.getNumber());
+      dept.deleteProject(this.project.getNumber());
       this.project = null;
       this.busy = false;
       this.completedProjects++;
-      this.notWorkingDays=0;
+      dept.quantityOfCompletedProjects++;
+      this.notWorkingDays = 0;
     } else
-    this.notWorkingDays++;
+      this.notWorkingDays++;
   }
 }
 
@@ -132,13 +133,13 @@ class Department {
     this.employees = [];
   }
   getProjects(projects) {
-    this.projects=this.projects.concat(projects);
+    this.projects = this.projects.concat(projects);
   }
   getProjectsLength() {
     return this.projects.length;
   }
   getEmployees(employees) {
-    this.employees=this.employees.concat(employees);
+    this.employees = this.employees.concat(employees);
   }
   getEmployeesLength() {
     return this.employees.length;
@@ -154,15 +155,25 @@ class Department {
       return number != num;
     });
   }
+  giveProjectsToEmployees() {
+// допилить добавление проекта программисту
+
+    /*
+    this.employees=this.employees.map((element) => {
+      if (element.project==null)
+        element.setProject()
+    });
+    */
+  }
 }
 
 class WebDepartment extends Department {
   constructor() {
     super();
   }
-  completingProjects(day,dept) {
-    for (let i=0;i<=this.getEmployeesLength()-1;i++)
-      this.employees[i].completeProject(day,dept);
+  completingProjects(day, testDept, dept) {
+    for (let i = 0; i <= this.getEmployeesLength() - 1; i++)
+      this.employees[i].completeProject(day, testDept, dept);
   }
 }
 
@@ -172,30 +183,36 @@ class MobileDepartment extends Department {
   }
   checkForFreeDevelopers() {
     if (this.getFreeEmployeesLength()) {
-      this.projects=this.projects.map((element) => {
-        if (element.getQuantityOfDevelopers()!=element.getDifficulty()) {
-          element.setQuantityOfDevelopers(element.getQuantityOfDevelopers()+1);
-          this.getFreeEmployees()[0].setProject(element);
-          this.getFreeEmployees()[0].setBusy(true);
+      this.projects = this.projects.map((element) => {
+        while (element.getQuantityOfDevelopers() != element.getDifficulty()) {
+          element.setQuantityOfDevelopers(element.getQuantityOfDevelopers() + 1);
+          if (this.getFreeEmployees()[0]) {
+            this.getFreeEmployees()[0].setProject(element);
+            this.getFreeEmployees()[0].setBusy(true);
+          }
         }
         return element;
       });
     }
   }
 
-  completingProjects(day,dept) {
-    for (let i=0;i<=this.getEmployeesLength()-1;i++)
-      this.employees[i].completeProject(day,dept);
+  completingProjects(day, testDept, dept) {
+    for (let i = 0; i <= this.getEmployeesLength() - 1; i++)
+      this.employees[i].completeProject(day,testDept, dept);
   }
 }
 
 class TestDepartment extends Department {
   constructor() {
     super();
+    this.quantityOfCompletedProjects=0;
   }
-  completingProjects(day) {
-    for (let i=0;i<=this.getEmployeesLength()-1;i++)
-      this.employees[i].completeProject(day);
+  completingProjects(day,dept) {
+    for (let i = 0; i <= this.getEmployeesLength() - 1; i++)
+      this.employees[i].completeProject(day,dept);
+  }
+  getQuantityOfCompletedProjects() {
+    return this.quantityOfCompletedProjects;
   }
 }
 
@@ -211,12 +228,11 @@ class Director {
   getProjects(day) {
     var allProjects = Math.round(Math.random() * 4);  //общее количество полученных проектов за день
     var webProjects = Math.round(Math.random() * allProjects);  //количество веб проектов
-    for (let i = 0; i <= allProjects - 1; i++) {
+    for (let i = 0; i <= allProjects - 1; i++)
       if (i <= webProjects)
-        this.webProjects.push(new WebProject(this.quantityOfAllProjects++,day));
+        this.webProjects.push(new WebProject(this.quantityOfAllProjects++, day));
       else
-        this.mobileProjects.push(new MobileProject(this.quantityOfAllProjects++,day));
-    }
+        this.mobileProjects.push(new MobileProject(this.quantityOfAllProjects++, day));
   }
 
   giveProjects(dept) {
@@ -232,15 +248,15 @@ class Director {
   hireEmployees(dept) {
     var employees = [];
     if (dept instanceof WebDepartment) {
-      for (let i = 0; i <= this.webProjects.length - dept.getFreeEmployeesLength() - 1; i++) 
+      for (let i = 0; i <= this.webProjects.length - dept.getFreeEmployeesLength() - 1; i++)
         employees.push(new WebDeveloper(this.quantityOfAllHiredEmployees++));
     } else
       if (dept instanceof MobileDepartment) {
-        for (let i = 0; i <= this.mobileProjects.length - dept.getFreeEmployeesLength() - 1; i++) 
+        for (let i = 0; i <= this.mobileProjects.length - dept.getFreeEmployeesLength() - 1; i++)
           employees.push(new MobileDeveloper(this.quantityOfAllHiredEmployees++));
       } else
         if (dept instanceof TestDepartment) {
-          for (let i = 0; i <= dept.getProjectsLength() - dept.getFreeEmployeesLength() - 1; i++) 
+          for (let i = 0; i <= dept.getProjectsLength() - dept.getFreeEmployeesLength() - 1; i++)
             employees.push(new QATester(this.quantityOfAllHiredEmployees++));
         }
     dept.getEmployees(employees);
@@ -264,22 +280,22 @@ class Director {
 
 class Company {
   constructor() {
-    this.director=new Director;
-    this.webDepartment=new WebDepartment;
-    this.mobileDepartment=new MobileDepartment;
-    this.testDepartment=new TestDepartment;
+    this.director = new Director;
+    this.webDepartment = new WebDepartment;
+    this.mobileDepartment = new MobileDepartment;
+    this.testDepartment = new TestDepartment;
   }
   startWorking(day) {
-    for (let i=0;i<=day-1;i++) {
+    for (let i = 0; i <= day - 1; i++) {
       this.director.getProjects(i);
       this.director.giveProjects(this.webDepartment);
       this.director.giveProjects(this.mobileDepartment);
       this.director.hireEmployees(this.webDepartment);
       this.director.hireEmployees(this.mobileDepartment);
       this.director.hireEmployees(this.testDepartment);
-      this.webDepartment.completingProjects(i,this.testDepartment);
-      this.mobileDepartment.completingProjects(i,this.testDepartment);
-      this.testDepartment.completingProjects(i);
+      this.webDepartment.completingProjects(i, this.testDepartment, this.webDepartment);
+      this.mobileDepartment.completingProjects(i, this.testDepartment, this.mobileDepartment);
+      this.testDepartment.completingProjects(i,this.testDepartment);
       this.mobileDepartment.checkForFreeDevelopers();
       this.director.fireOut(this.webDepartment);
       this.director.fireOut(this.mobileDepartment);
@@ -288,6 +304,7 @@ class Company {
   }
 }
 
-var apple=new Company;
-apple.startWorking(10);
+var apple = new Company;
+apple.startWorking(15);
+//console.log(apple.webDepartment.getEmployeesLength());
 console.log(apple);
